@@ -20,7 +20,7 @@ function App() {
         <Route path='/welcome' element={<Welcome />} />
         <Route path='/addUser' element={<AddUser />} />
 
-        <Route path='/login' element={<Login />} />
+        <Route path='/' index element={<Login />} />
         <Route path='/dashboard' index element={<Home />} />
         <Route path='/dashboard/subject' element={<AddSubject />} />
         <Route path='/dashboard/section' element={<AddSection />} />
