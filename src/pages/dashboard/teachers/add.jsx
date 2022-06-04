@@ -5,26 +5,32 @@ import {
   BsFillPlusSquareFill,
   BsViewList,
 } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 import ErrorAlert from "../../../components/alerts/error";
+import InfoAlert from "../../../components/alerts/info";
 import SuccessAlert from "../../../components/alerts/success";
+import PrimaryBtn from "../../../components/buttons/primary";
+import SecondaryBtn from "../../../components/buttons/secondary";
+import Textfield from "../../../components/inputs/textfield";
 import Sidebar from "../../../components/navigation/sidebar";
 import apiUrl from "../../../config";
 import {
   AddLoaderToBtn,
   AddTextToBtn,
   HideAlert,
+  IsAdminLoggedIn,
   ShowAlert,
 } from "../../../helpers/functions";
 
 const AddTeacher = () => {
-  const [subjects, setSubjects] = useState([]);
+  const navigate = useNavigate();
 
   const [alertMsg, setAlertMsg] = useState();
 
   const [teachers, setTeachers] = useState([]);
 
-  const [teacherName, setTeacherName] = useState();
-  const [rate, setRate] = useState();
+  const [teacherName, setTeacherName] = useState("");
+  const [rate, setRate] = useState(0);
 
   function FetchAllTeachers() {
     fetch(`${apiUrl}/teachers/`, {
@@ -33,23 +39,27 @@ const AddTeacher = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setTeachers(data);
       });
   }
 
   useEffect(() => {
-    if (sessionStorage.getItem("token")) {
-      const token = sessionStorage.getItem("token");
-    } else {
-      // user not authorised, navigate to login first
+    if (!IsAdminLoggedIn()) {
+      setAlertMsg("Not Authorised. Please Login First. Redirecting...");
+
+      ShowAlert("info");
+
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 3000);
     }
 
     FetchAllTeachers();
   }, []);
 
-  function OnSubmit() {
+  function OnSubmit(e) {
+    e.preventDefault();
+
     AddLoaderToBtn("addBtn");
 
     const newTeacher = {
@@ -67,8 +77,6 @@ const AddTeacher = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         if (data.result) {
           // show success alert as new subject created
           setAlertMsg(data.message);
@@ -104,6 +112,7 @@ const AddTeacher = () => {
       {/* Alerts */}
       <SuccessAlert id='success' heading='Success' alertMessage={alertMsg} />
       <ErrorAlert id='error' heading='Error' alertMessage={alertMsg} />
+      <InfoAlert id='info' heading='Info' alertMessage={alertMsg} />
 
       {/* Sidebar */}
       <Sidebar />
@@ -112,65 +121,57 @@ const AddTeacher = () => {
         <h1 className='font-semibold text-3xl'>Teachers Management</h1>
         <br />
         <div className='w-full flex space-x-3 border-t border-b py-2'>
-          <button className='flex w-auto p-3 px-5 bg-white hover:bg-gray-200 rounded-md transition-all transform scale-100 active:scale-95'>
-            <span className='p-1 mr-3'>
-              <BsFillPlusSquareFill />
-            </span>
-            Add New Teacher
-          </button>
+          <SecondaryBtn
+            fullWidth={false}
+            icon={<BsFillPlusSquareFill />}
+            text='Add New Teacher'
+          />
         </div>
 
         <br />
         <br />
 
-        <div className='w-full grid grid-cols-2 gap-10'>
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Teacher Name</p>
-            <input
-              type='text'
-              className='w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              onChange={(e) => {
-                setTeacherName(e.target.value);
-              }}
-              value={teacherName}
-              required
-            />
-          </div>
+        <form onSubmit={OnSubmit}>
+          <div className='w-full grid grid-cols-2 gap-10'>
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Teacher Name</p>
+              <Textfield
+                type='text'
+                onChange={(e) => {
+                  setTeacherName(e.target.value);
+                }}
+                value={teacherName}
+                placeholder='eg. Sir Hamza'
+              />
+            </div>
 
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Percentage Rate</p>
-            <input
-              type='number'
-              className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              onChange={(e) => {
-                setRate(e.target.value);
-              }}
-              value={rate}
-              required
-            />
-          </div>
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Percentage Rate</p>
+              <Textfield
+                type='number'
+                onChange={(e) => {
+                  setRate(e.target.value);
+                }}
+                value={rate}
+                placeholder='eg. 75'
+              />
+            </div>
 
-          <div className='col-span-2 w-full flex items-end'>
-            <button
-              id='addBtn'
-              onClick={OnSubmit}
-              className='w-full p-3 bg-gray-800 text-white rounded-md transition-all hover:bg-gray-900 transform scale-100 active:scale-95'
-            >
-              Add Subject
-            </button>
+            <div className='col-span-2 w-full flex items-end'>
+              <PrimaryBtn id='addBtn' type='submit' text='Add Teacher' />
+            </div>
           </div>
-        </div>
+        </form>
 
         <br />
         <br />
 
         <div className='w-full flex space-x-3 border-t border-b py-2'>
-          <button className='flex w-auto p-3 px-5 bg-white hover:bg-gray-200 rounded-md transition-all transform scale-100 active:scale-95'>
-            <span className='p-1 mr-3'>
-              <BsViewList />
-            </span>
-            View All Teachers
-          </button>
+          <SecondaryBtn
+            fullWidth={false}
+            icon={<BsViewList />}
+            text='View All Teachers'
+          />
         </div>
 
         <br />

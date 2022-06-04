@@ -5,18 +5,26 @@ import {
   BsFillPlusSquareFill,
   BsViewList,
 } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 import ErrorAlert from "../../../components/alerts/error";
+import InfoAlert from "../../../components/alerts/info";
 import SuccessAlert from "../../../components/alerts/success";
+import PrimaryBtn from "../../../components/buttons/primary";
+import SecondaryBtn from "../../../components/buttons/secondary";
+import Textfield from "../../../components/inputs/textfield";
 import Sidebar from "../../../components/navigation/sidebar";
 import apiUrl from "../../../config";
 import {
   AddLoaderToBtn,
   AddTextToBtn,
   HideAlert,
+  IsAdminLoggedIn,
   ShowAlert,
 } from "../../../helpers/functions";
 
 const AddStudent = () => {
+  const navigate = useNavigate();
+
   const [alertMsg, setAlertMsg] = useState();
 
   const [students, setStudents] = useState([]);
@@ -33,23 +41,27 @@ const AddStudent = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setStudents(data);
       });
   }
 
   useEffect(() => {
-    if (sessionStorage.getItem("token")) {
-      const token = sessionStorage.getItem("token");
-    } else {
-      // user not authorised, navigate to login first
+    if (!IsAdminLoggedIn()) {
+      setAlertMsg("Not Authorised. Please Login First. Redirecting...");
+
+      ShowAlert("info");
+
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 3000);
     }
 
     FetchAllStudents();
   }, []);
 
-  function OnSubmit() {
+  function OnSubmit(e) {
+    e.preventDefault();
+
     AddLoaderToBtn("addBtn");
 
     const newStudent = {
@@ -58,8 +70,6 @@ const AddStudent = () => {
       level: level,
       studentClass: studentClass,
     };
-
-    console.log(newStudent);
 
     fetch(`${apiUrl}/students/`, {
       method: "post",
@@ -71,8 +81,6 @@ const AddStudent = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         if (data.result) {
           // show success alert as new subject created
           setAlertMsg(data.message);
@@ -110,6 +118,7 @@ const AddStudent = () => {
       {/* Alerts */}
       <SuccessAlert id='success' heading='Success' alertMessage={alertMsg} />
       <ErrorAlert id='error' heading='Error' alertMessage={alertMsg} />
+      <InfoAlert id='info' heading='Info' alertMessage={alertMsg} />
 
       {/* Sidebar */}
       <Sidebar />
@@ -118,101 +127,98 @@ const AddStudent = () => {
         <h1 className='font-semibold text-3xl'>Students Management</h1>
         <br />
         <div className='w-full flex space-x-3 border-t border-b py-2'>
-          <button className='flex w-auto p-3 px-5 bg-white hover:bg-gray-200 rounded-md transition-all transform scale-100 active:scale-95'>
-            <span className='p-1 mr-3'>
-              <BsFillPlusSquareFill />
-            </span>
-            Add New Student
-          </button>
+          <SecondaryBtn
+            fullWidth={false}
+            icon={<BsFillPlusSquareFill />}
+            text='Add New Student'
+          />
         </div>
 
         <br />
         <br />
 
-        <div className='w-full grid grid-cols-2 gap-10'>
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Student Name</p>
-            <input
-              type='text'
-              className='w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              onChange={(e) => {
-                setName(e.target.value);
-              }}
-              value={name}
-              required
-            />
+        <form onSubmit={OnSubmit}>
+          <div className='w-full grid grid-cols-2 gap-10'>
+            {/* Student Name */}
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Student Name</p>
+              <Textfield
+                type='text'
+                onChange={(e) => {
+                  setName(e.target.value);
+                }}
+                value={name}
+                placeholder='eg. Rayyan Dakhni'
+              />
+            </div>
+
+            {/* Phone Number */}
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Phone Number</p>
+              <Textfield
+                type='number'
+                onChange={(e) => {
+                  setPhoneNo(e.target.value);
+                }}
+                value={phoneNo}
+                placeholder='eg. 3312221445'
+              />
+            </div>
+
+            {/* Level */}
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Level</p>
+
+              <select
+                onChange={(e) => {
+                  setLevel(e.target.value);
+                }}
+                value={level}
+                className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+                required
+              >
+                <option>Select Level</option>
+                <option value='O'>O Levels</option>
+                <option value='A'>A Levels</option>
+              </select>
+            </div>
+
+            {/* Class */}
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Class</p>
+
+              <select
+                onChange={(e) => {
+                  setStudentClass(e.target.value);
+                }}
+                value={studentClass}
+                className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+              >
+                <option>Select Class</option>
+                <option value='9'>9</option>
+                <option value='10'>10</option>
+                <option value='11'>11</option>
+                <option value='As'>As</option>
+                <option value='A2'>A2</option>
+              </select>
+            </div>
+
+            {/* Submit Btn */}
+            <div className='col-span-2 w-full flex items-end'>
+              <PrimaryBtn id='addBtn' type='submit' text='Add Student' />
+            </div>
           </div>
-
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Phone Number</p>
-            <input
-              type='number'
-              className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              placeholder='eg. 3312221445'
-              onChange={(e) => {
-                setPhoneNo(e.target.value);
-              }}
-              value={phoneNo}
-              required
-            />
-          </div>
-
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Level</p>
-
-            <select
-              onChange={(e) => {
-                setLevel(e.target.value);
-              }}
-              value={level}
-              className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-            >
-              <option>Select Level</option>
-              <option value='O'>O Levels</option>
-              <option value='A'>A Levels</option>
-            </select>
-          </div>
-
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Class</p>
-
-            <select
-              onChange={(e) => {
-                setStudentClass(e.target.value);
-              }}
-              value={studentClass}
-              className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-            >
-              <option>Select Class</option>
-              <option value='9'>9</option>
-              <option value='10'>10</option>
-              <option value='11'>11</option>
-              <option value='As'>As</option>
-              <option value='A2'>A2</option>
-            </select>
-          </div>
-
-          <div className='col-span-2 w-full flex items-end'>
-            <button
-              id='addBtn'
-              onClick={OnSubmit}
-              className='w-full p-3 bg-gray-800 text-white rounded-md transition-all hover:bg-gray-900 transform scale-100 active:scale-95'
-            >
-              Add Student
-            </button>
-          </div>
-        </div>
+        </form>
 
         <br />
         <br />
 
         <div className='w-full flex space-x-3 border-t border-b py-2'>
-          <button className='flex w-auto p-3 px-5 bg-white hover:bg-gray-200 rounded-md transition-all transform scale-100 active:scale-95'>
-            <span className='p-1 mr-3'>
-              <BsViewList />
-            </span>
-            View All Students
-          </button>
+          <SecondaryBtn
+            fullWidth={false}
+            icon={<BsViewList />}
+            text='View All Students'
+          />
         </div>
 
         <br />
@@ -230,10 +236,10 @@ const AddStudent = () => {
               </tr>
             </thead>
             <tbody>
-              {students.map((student) => {
+              {students.map((student, index) => {
                 return (
                   <tr key={student.student_id}>
-                    <td className='text-center py-2'>{student.student_id}</td>
+                    <td className='text-center py-2'>{index + 1}</td>
                     <td className='text-center py-2'>{student.fullName}</td>
                     <td className='text-center py-2'>{student.phoneNo}</td>
                     <td className='text-center py-2 text-sm'>

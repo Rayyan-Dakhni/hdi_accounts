@@ -27,3 +27,11 @@ export const AddTextToBtn = (id, text) => {
 
   btn.innerHTML = text;
 };
+
+export const IsAdminLoggedIn = () => {
+  if (sessionStorage.getItem("token")) {
+    return true;
+  }
+
+  return false;
+};

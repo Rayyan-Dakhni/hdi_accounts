@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ErrorAlert from "../../components/alerts/error";
 import SuccessAlert from "../../components/alerts/success";
+import PrimaryBtn from "../../components/buttons/primary";
+import Textfield from "../../components/inputs/textfield";
 import apiUrl from "../../config";
 import {
   AddLoaderToBtn,
@@ -19,7 +21,9 @@ const Login = () => {
 
   const [alertMsg, setAlertMsg] = useState();
 
-  function OnSubmit() {
+  function OnSubmit(e) {
+    e.preventDefault();
+
     AddLoaderToBtn("loginBtn");
 
     const credentials = {
@@ -41,7 +45,7 @@ const Login = () => {
 
         setAlertMsg(data.message);
 
-        if (data.userFound == 1) {
+        if (data.userFound === 1) {
           if (data.token) {
             // show success alert as the user is authenticated
             ShowAlert("success");
@@ -51,7 +55,7 @@ const Login = () => {
             setTimeout(() => {
               // navigate to dashboard
               navigate("/dashboard", { replace: true });
-            }, 3000);
+            }, 2000);
           } else {
             // show error alert as the password was incorrect
             ShowAlert("error");
@@ -83,48 +87,57 @@ const Login = () => {
 
       <h1 className='font-semibold text-6xl font-serif'>Welcome Back</h1>
       <h3 className='text-gray-500 text-lg'>Please login to continue</h3>
-      <div></div>
-      <div className='w-1/4'>
-        <p className='py-1'>Username</p>
-        <input
-          type='text'
-          className='w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-          onChange={(e) => {
-            setUsername(e.target.value);
-          }}
-          required
-        />
-      </div>
-      <div className='w-1/4'>
-        <p className='py-1'>Password</p>
-        <input
-          type='password'
-          className='w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-          onChange={(e) => {
-            setPassword(e.target.value);
-          }}
-          required
-        />
-      </div>
 
-      <div
-        onClick={() => {
-          // navigate to forget password page
-        }}
-        className='w-1/4 flex justify-end text-gray-500 hover:text-blue-500 cursor-pointer'
+      <form
+        className='w-full px-10 sm:px-0 sm:w-1/3 lg:w-1/4'
+        onSubmit={OnSubmit}
       >
-        Forgot Password?
-      </div>
+        {/* Username */}
+        <div className='w-full'>
+          <p className='py-1'>Username</p>
+          <Textfield
+            type='text'
+            onChange={(e) => {
+              setUsername(e.target.value);
+            }}
+            value={username}
+          />
+        </div>
 
-      <div className='w-1/4'>
-        <button
-          id='loginBtn'
-          onClick={OnSubmit}
-          className='p-3 w-full bg-gradient-to-r from-blue-800 to-blue-500 text-white font-sans font-semibold text-lg tracking-wider rounded-lg transition-all active:scale-95'
+        {/* Password */}
+        <div className='w-full'>
+          <p className='py-1'>Password</p>
+          <Textfield
+            type='password'
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+            value={password}
+          />
+        </div>
+
+        <div
+          onClick={() => {
+            // navigate to forget password page
+          }}
+          className='w-full mt-2 flex justify-end text-gray-500 hover:text-blue-500 cursor-pointer'
         >
-          Login
-        </button>
-      </div>
+          Forgot Password?
+        </div>
+
+        <br />
+
+        <div className='w-full'>
+          <PrimaryBtn id='loginBtn' type='submit' text='Login' />
+          {/* <button
+            id='loginBtn'
+            type='submit'
+            className='p-3 w-full bg-gradient-to-r from-blue-800 to-blue-500 text-white font-sans font-semibold text-lg tracking-wider rounded-lg transition-all active:scale-95'
+          >
+            Login
+          </button> */}
+        </div>
+      </form>
     </div>
   );
 };

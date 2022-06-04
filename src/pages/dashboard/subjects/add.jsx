@@ -5,19 +5,27 @@ import {
   BsFillPlusSquareFill,
   BsViewList,
 } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 import ErrorAlert from "../../../components/alerts/error";
 import SuccessAlert from "../../../components/alerts/success";
+import InfoAlert from "../../../components/alerts/info";
+import PrimaryBtn from "../../../components/buttons/primary";
+import SecondaryBtn from "../../../components/buttons/secondary";
+import Textfield from "../../../components/inputs/textfield";
 import Sidebar from "../../../components/navigation/sidebar";
 import apiUrl from "../../../config";
 import {
   AddLoaderToBtn,
   AddTextToBtn,
   HideAlert,
+  IsAdminLoggedIn,
   ShowAlert,
 } from "../../../helpers/functions";
 
 const AddSubject = () => {
-  const [subjectName, setSubjectName] = useState();
+  const navigate = useNavigate();
+
+  const [subjectName, setSubjectName] = useState("");
 
   const [subjects, setSubjects] = useState([]);
 
@@ -30,23 +38,27 @@ const AddSubject = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setSubjects(data);
       });
   }
 
   useEffect(() => {
-    if (sessionStorage.getItem("token")) {
-      const token = sessionStorage.getItem("token");
-    } else {
-      // user not authorised, navigate to login first
+    if (!IsAdminLoggedIn()) {
+      setAlertMsg("Not Authorised. Please Login First.");
+
+      ShowAlert("info");
+
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 3000);
     }
 
     FetchAllSubjects();
   }, []);
 
-  function OnSubmit() {
+  function OnSubmit(e) {
+    e.preventDefault();
+
     AddLoaderToBtn("addSubBtn");
 
     const newSubject = {
@@ -63,8 +75,6 @@ const AddSubject = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         if (data.result) {
           // show success alert as new subject created
           setAlertMsg(data.message);
@@ -93,11 +103,37 @@ const AddSubject = () => {
       });
   }
 
+  function DeleteSubject(id) {
+    fetch(`${apiUrl}/subjects`, {
+      method: "delete",
+      mode: "cors",
+      body: JSON.stringify({ id: id }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+
+        setAlertMsg(data.message);
+
+        ShowAlert("success");
+
+        FetchAllSubjects();
+
+        setTimeout(() => {
+          HideAlert("success");
+        }, 3000);
+      });
+  }
+
   return (
     <div className='w-screen min-h-screen flex'>
       {/* Alerts */}
       <SuccessAlert id='success' heading='Success' alertMessage={alertMsg} />
       <ErrorAlert id='error' heading='Error' alertMessage={alertMsg} />
+      <InfoAlert id='info' heading='Info' alertMessage={alertMsg} />
 
       {/* Sidebar */}
       <Sidebar />
@@ -106,52 +142,45 @@ const AddSubject = () => {
         <h1 className='font-semibold text-3xl'>Subjects Management</h1>
         <br />
         <div className='w-full flex space-x-3 border-t border-b py-2'>
-          <button className='flex w-auto p-3 px-5 bg-white hover:bg-gray-200 rounded-md transition-all transform scale-100 active:scale-95'>
-            <span className='p-1 mr-3'>
-              <BsFillPlusSquareFill />
-            </span>
-            Add New Subject
-          </button>
+          <SecondaryBtn
+            fullWidth={false}
+            icon={<BsFillPlusSquareFill />}
+            text='Add New Subject'
+          />
         </div>
 
         <br />
         <br />
 
-        <div className='w-full grid grid-cols-2 gap-10'>
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Subject Name</p>
-            <input
-              type='text'
-              className='w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              onChange={(e) => {
-                setSubjectName(e.target.value);
-              }}
-              value={subjectName}
-              required
-            />
-          </div>
+        <form onSubmit={OnSubmit}>
+          <div className='w-full grid grid-cols-2 gap-10'>
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Subject Name</p>
+              <Textfield
+                type='text'
+                onChange={(e) => {
+                  setSubjectName(e.target.value);
+                }}
+                value={subjectName}
+                placeholder='eg. Mathematics'
+              />
+            </div>
 
-          <div className='w-full flex items-end'>
-            <button
-              id='addSubBtn'
-              onClick={OnSubmit}
-              className='w-full p-3 bg-gray-800 text-white rounded-md transition-all hover:bg-gray-900 transform scale-100 active:scale-95'
-            >
-              Add Subject
-            </button>
+            <div className='w-full flex items-end'>
+              <PrimaryBtn id='addSubBtn' type='submit' text='Add Subject' />
+            </div>
           </div>
-        </div>
+        </form>
 
         <br />
         <br />
 
         <div className='w-full flex space-x-3 border-t border-b py-2'>
-          <button className='flex w-auto p-3 px-5 bg-white hover:bg-gray-200 rounded-md transition-all transform scale-100 active:scale-95'>
-            <span className='p-1 mr-3'>
-              <BsViewList />
-            </span>
-            View All Subjects
-          </button>
+          <SecondaryBtn
+            fullWidth={false}
+            icon={<BsViewList />}
+            text='View All Subject'
+          />
         </div>
 
         <br />
@@ -173,11 +202,12 @@ const AddSubject = () => {
                     <td className='text-center py-2'>{subject.name}</td>
                     <td className='py-2'>
                       <div className='w-full flex space-x-3'>
-                        <button className='w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white'>
-                          Edit
-                        </button>
-
-                        <button className='w-full p-2 bg-red-600 hover:bg-red-700 rounded-md text-white'>
+                        <button
+                          onClick={() => {
+                            DeleteSubject(subject.subject_id);
+                          }}
+                          className='w-full p-2 bg-red-600 hover:bg-red-700 rounded-md text-white'
+                        >
                           Delete
                         </button>
                       </div>

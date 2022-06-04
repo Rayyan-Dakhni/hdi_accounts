@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import {
-  BsFillPieChartFill,
+  BsFillFilePersonFill,
   BsFillPlusSquareFill,
   BsViewList,
 } from "react-icons/bs";
@@ -11,7 +11,6 @@ import InfoAlert from "../../../components/alerts/info";
 import SuccessAlert from "../../../components/alerts/success";
 import PrimaryBtn from "../../../components/buttons/primary";
 import SecondaryBtn from "../../../components/buttons/secondary";
-import Textfield from "../../../components/inputs/textfield";
 import Sidebar from "../../../components/navigation/sidebar";
 import apiUrl from "../../../config";
 import {
@@ -22,19 +21,28 @@ import {
   ShowAlert,
 } from "../../../helpers/functions";
 
-const AddSection = () => {
+const AssignTeacher = () => {
   const navigate = useNavigate();
 
-  const [sectionName, setSectionName] = useState("");
-  const [subject, setSubject] = useState();
-  const [teacher, setTeacher] = useState();
-  const [studentClass, setStudentClass] = useState();
-
-  const [subjects, setSubjects] = useState([]);
-  const [teachers, setTeachers] = useState([]);
-  const [sections, setSections] = useState([]);
-
   const [alertMsg, setAlertMsg] = useState();
+
+  const [teachers, setTeachers] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [assigns, setAssigns] = useState([]);
+
+  const [teacher, setTeacher] = useState();
+  const [subject, setSubject] = useState();
+
+  function FetchAllTeachers() {
+    fetch(`${apiUrl}/teachers/`, {
+      method: "get",
+      mode: "cors",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setTeachers(data);
+      });
+  }
 
   function FetchAllSubjects() {
     fetch(`${apiUrl}/subjects/`, {
@@ -43,32 +51,22 @@ const AddSection = () => {
     })
       .then((response) => response.json())
       .then((data) => {
+        console.log(data);
+
         setSubjects(data);
       });
   }
 
-  function FetchTeachersForTheSubject(id) {
-    fetch(`${apiUrl}/teachers/getForSubject?subject_id=${id}`, {
+  function FetchAllAssigns() {
+    fetch(`${apiUrl}/assign/`, {
       method: "get",
       mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
     })
       .then((response) => response.json())
       .then((data) => {
-        setTeachers(data);
-      });
-  }
+        console.log(data);
 
-  function FetchAllSections() {
-    fetch(`${apiUrl}/sections/`, {
-      method: "get",
-      mode: "cors",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setSections(data);
+        setAssigns(data);
       });
   }
 
@@ -83,35 +81,28 @@ const AddSection = () => {
       }, 3000);
     }
 
+    FetchAllTeachers();
     FetchAllSubjects();
-    FetchAllSections();
+    FetchAllAssigns();
   }, []);
-
-  useEffect(() => {
-    if (subject) {
-      FetchTeachersForTheSubject(subject);
-    }
-  }, [subject]);
 
   function OnSubmit(e) {
     e.preventDefault();
 
     AddLoaderToBtn("addBtn");
 
-    const newSection = {
-      name: sectionName,
-      subject_id: subject,
+    const teacherAssign = {
       teacher_id: teacher,
-      studentClass: studentClass,
+      subject_id: subject,
     };
 
-    fetch(`${apiUrl}/sections/`, {
+    fetch(`${apiUrl}/assign/`, {
       method: "post",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(newSection),
+      body: JSON.stringify(teacherAssign),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -121,12 +112,8 @@ const AddSection = () => {
 
           ShowAlert("success");
 
-          // call to fetch all sections
-          FetchAllSections();
-
-          setSectionName("");
-          setSubject("Choose Subject");
-          setTeacher("Select a subject first");
+          // fetch all teachers again
+          FetchAllAssigns();
 
           setTimeout(() => {
             HideAlert("success");
@@ -146,6 +133,33 @@ const AddSection = () => {
       });
   }
 
+  function DeleteAssignment(id) {
+    fetch(`${apiUrl}/assign/`, {
+      method: "delete",
+      mode: "cors",
+      body: JSON.stringify({
+        id: id,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+
+        setAlertMsg(data.message);
+
+        ShowAlert("success");
+
+        FetchAllAssigns();
+
+        setTimeout(() => {
+          HideAlert("success");
+        }, 3000);
+      });
+  }
+
   return (
     <div className='w-screen min-h-screen flex'>
       {/* Alerts */}
@@ -157,13 +171,13 @@ const AddSection = () => {
       <Sidebar />
 
       <div className='w-full h-screen overflow-auto bg-white p-10'>
-        <h1 className='font-semibold text-3xl'>Sections Management</h1>
+        <h1 className='font-semibold text-3xl'>Assign Teachers</h1>
         <br />
         <div className='w-full flex space-x-3 border-t border-b py-2'>
           <SecondaryBtn
             fullWidth={false}
             icon={<BsFillPlusSquareFill />}
-            text='Add New Section'
+            text='Assign Teacher'
           />
         </div>
 
@@ -172,45 +186,10 @@ const AddSection = () => {
 
         <form onSubmit={OnSubmit}>
           <div className='w-full grid grid-cols-2 gap-10'>
-            {/* Section Name */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Section Name</p>
-              <Textfield
-                type='text'
-                onChange={(e) => {
-                  setSectionName(e.target.value);
-                }}
-                value={sectionName}
-                placeholder='eg. Mathematics By Sir Hamza'
-              />
-            </div>
-
-            {/* Subject */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Subject</p>
-              <select
-                onChange={(e) => {
-                  setSubject(e.target.value);
-                }}
-                value={subject}
-                className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              >
-                <option>Choose Subject</option>
-
-                {/* Displaying subjects from the database */}
-                {subjects.map((sub) => {
-                  return (
-                    <option key={sub.subject_id} value={sub.subject_id}>
-                      {sub.name}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
             {/* Teacher */}
             <div className='w-full'>
               <p className='py-1 text-gray-700'>Teacher</p>
+
               <select
                 onChange={(e) => {
                   setTeacher(e.target.value);
@@ -218,40 +197,42 @@ const AddSection = () => {
                 value={teacher}
                 className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
               >
-                <option>Select a subject first</option>
-                {teachers.map((teach) => {
+                <option>Select Teacher</option>
+                {teachers.map((teacher, index, arr) => {
+                  console.log(arr);
                   return (
-                    <option key={teach.teacher_id} value={teach.teacher_id}>
-                      {teach.name}
+                    <option key={teacher.teacher_id} value={teacher.teacher_id}>
+                      {teacher.name}
                     </option>
                   );
                 })}
               </select>
             </div>
 
-            {/* Class */}
+            {/* Subject */}
             <div className='w-full'>
-              <p className='py-1 text-gray-700'>Class</p>
+              <p className='py-1 text-gray-700'>Subject</p>
 
               <select
                 onChange={(e) => {
-                  setStudentClass(e.target.value);
+                  setSubject(e.target.value);
                 }}
-                value={studentClass}
+                value={subject}
                 className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
               >
-                <option>Select Class</option>
-                <option value='9'>9</option>
-                <option value='10'>10</option>
-                <option value='11'>11</option>
-                <option value='As'>As</option>
-                <option value='A2'>A2</option>
+                <option>Select Subject</option>
+                {subjects.map((subject) => {
+                  return (
+                    <option key={subject.subject_id} value={subject.subject_id}>
+                      {subject.name}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
-            {/* Submit Btn */}
             <div className='col-span-2 w-full flex items-end'>
-              <PrimaryBtn id='addBtn' type='submit' text='Add Section' />
+              <PrimaryBtn id='addBtn' type='submit' text='Assign Teacher' />
             </div>
           </div>
         </form>
@@ -263,40 +244,37 @@ const AddSection = () => {
           <SecondaryBtn
             fullWidth={false}
             icon={<BsViewList />}
-            text='View All Sections'
+            text='View All Teacher Assigns'
           />
         </div>
 
         <br />
 
-        {sections.length > 0 ? (
+        {assigns.length > 0 ? (
           <table className='w-full table-auto'>
             <thead>
               <tr className=''>
                 <th className='pb-3'>Id</th>
-                <th className='pb-3'>Section Name</th>
-                <th className='pb-3'>Teachers</th>
+                <th className='pb-3'>Teacher</th>
                 <th className='pb-3'>Subject</th>
-                <th className='pb-3'>Class</th>
                 <th className='pb-3'>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {sections.map((section, index) => {
+              {assigns.map((assign, index) => {
                 return (
-                  <tr key={section.section_id}>
+                  <tr key={assign.teacher_subject_id}>
                     <td className='text-center py-2'>{index + 1}</td>
-                    <td className='text-center py-2'>{section.section}</td>
-                    <td className='text-center py-2'>{section.teacher}</td>
-                    <td className='text-center py-2'>{section.subject}</td>
-                    <td className='text-center py-2'>{section.class}</td>
+                    <td className='text-center py-2'>{assign.teacher_name}</td>
+                    <td className='text-center py-2'>{assign.subject_name}</td>
                     <td className='py-2'>
                       <div className='w-full flex space-x-3'>
-                        <button className='w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white'>
-                          Edit
-                        </button>
-
-                        <button className='w-full p-2 bg-red-600 hover:bg-red-700 rounded-md text-white'>
+                        <button
+                          onClick={() => {
+                            DeleteAssignment(assign.teacher_subject_id);
+                          }}
+                          className='w-full p-2 bg-red-600 hover:bg-red-700 rounded-md text-white'
+                        >
                           Delete
                         </button>
                       </div>
@@ -309,10 +287,10 @@ const AddSection = () => {
         ) : (
           <div className='w-full p-5'>
             <div className='text-8xl text-gray-900'>
-              <BsFillPieChartFill className='mx-auto' />
+              <BsFillFilePersonFill className='mx-auto' />
             </div>
             <br />
-            <h3 className='text-center'>No sections added yet</h3>
+            <h3 className='text-center'>No Teachers added yet</h3>
           </div>
         )}
       </div>
@@ -320,4 +298,4 @@ const AddSection = () => {
   );
 };
 
-export default AddSection;
+export default AssignTeacher;

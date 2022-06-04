@@ -5,18 +5,26 @@ import {
   BsFillPlusSquareFill,
   BsViewList,
 } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 import ErrorAlert from "../../../components/alerts/error";
+import InfoAlert from "../../../components/alerts/info";
 import SuccessAlert from "../../../components/alerts/success";
+import PrimaryBtn from "../../../components/buttons/primary";
+import SecondaryBtn from "../../../components/buttons/secondary";
+import Textfield from "../../../components/inputs/textfield";
 import Sidebar from "../../../components/navigation/sidebar";
 import apiUrl from "../../../config";
 import {
   AddLoaderToBtn,
   AddTextToBtn,
   HideAlert,
+  IsAdminLoggedIn,
   ShowAlert,
 } from "../../../helpers/functions";
 
 const CollectFees = () => {
+  const navigate = useNavigate();
+
   const [alertMsg, setAlertMsg] = useState();
 
   const [students, setStudents] = useState([]);
@@ -34,8 +42,6 @@ const CollectFees = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setStudents(data);
       });
   }
@@ -47,8 +53,6 @@ const CollectFees = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setFeeCollections(data);
       });
   }
@@ -60,28 +64,38 @@ const CollectFees = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setFeePayable(data.feePayable);
       });
   }
 
   useEffect(() => {
-    if (sessionStorage.getItem("token")) {
-      const token = sessionStorage.getItem("token");
-    } else {
-      // user not authorised, navigate to login first
+    if (!IsAdminLoggedIn()) {
+      setAlertMsg("Not Authorised. Please Login First. Redirecting...");
+
+      ShowAlert("info");
+
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 3000);
     }
 
-    FetchAllFeeCollections();
-    FetchAllStudents();
+    const FetchData = () => {
+      FetchAllFeeCollections();
+      FetchAllStudents();
+    };
+
+    FetchData();
   }, []);
 
   useEffect(() => {
-    FetchStudentFeePayable(student);
+    if (student) {
+      FetchStudentFeePayable(student);
+    }
   }, [student]);
 
-  function OnSubmit() {
+  function OnSubmit(e) {
+    e.preventDefault();
+
     AddLoaderToBtn("addBtn");
 
     const fees = {
@@ -89,8 +103,6 @@ const CollectFees = () => {
       amount: amount,
       month: month,
     };
-
-    console.log(fees);
 
     fetch(`${apiUrl}/fees/collect`, {
       method: "post",
@@ -102,8 +114,6 @@ const CollectFees = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         if (data.result) {
           // show success alert as new subject created
           setAlertMsg(data.message);
@@ -114,8 +124,8 @@ const CollectFees = () => {
           FetchAllFeeCollections();
 
           setStudent("Select student");
-          setAmount();
-          setFeePayable();
+          setAmount(0);
+          setFeePayable(0);
           setMonth("Select month");
 
           setTimeout(() => {
@@ -141,6 +151,7 @@ const CollectFees = () => {
       {/* Alerts */}
       <SuccessAlert id='success' heading='Success' alertMessage={alertMsg} />
       <ErrorAlert id='error' heading='Error' alertMessage={alertMsg} />
+      <InfoAlert id='info' heading='Info' alertMessage={alertMsg} />
 
       {/* Sidebar */}
       <Sidebar />
@@ -149,114 +160,107 @@ const CollectFees = () => {
         <h1 className='font-semibold text-3xl'>Fees Management</h1>
         <br />
         <div className='w-full flex space-x-3 border-t border-b py-2'>
-          <button className='flex w-auto p-3 px-5 bg-white hover:bg-gray-200 rounded-md transition-all transform scale-100 active:scale-95'>
-            <span className='p-1 mr-3'>
-              <BsFillPlusSquareFill />
-            </span>
-            Collect Fees
-          </button>
+          <SecondaryBtn
+            fullWidth={false}
+            icon={<BsFillPlusSquareFill />}
+            text='Collect Fees'
+          />
         </div>
 
         <br />
         <br />
 
-        <div className='w-full grid grid-cols-2 gap-10'>
-          {/* Student Name */}
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Student Name</p>
+        <form onSubmit={OnSubmit}>
+          <div className='w-full grid grid-cols-2 gap-10'>
+            {/* Student Name */}
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Student Name</p>
 
-            <select
-              onChange={(e) => {
-                setStudent(e.target.value);
-              }}
-              value={student}
-              className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-            >
-              <option>Select Student</option>
-              {students.map((student) => {
-                return (
-                  <option key={student.student_id} value={student.student_id}>
-                    {student.fullName}
-                  </option>
-                );
-              })}
-            </select>
+              <select
+                onChange={(e) => {
+                  setStudent(e.target.value);
+                }}
+                value={student}
+                className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+              >
+                <option>Select Student</option>
+                {students.map((student) => {
+                  return (
+                    <option key={student.student_id} value={student.student_id}>
+                      {student.fullName}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            {/* Fee Payable */}
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Fee Payable</p>
+              <input
+                type='text'
+                className='appearance-none w-full bg-gray-100 p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+                value={feePayable}
+                required
+                readOnly
+              />
+            </div>
+
+            {/* Amount */}
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Amount</p>
+              <Textfield
+                type='number'
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                }}
+                value={amount}
+                placeholder='5000'
+              />
+            </div>
+
+            {/* Month */}
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Month</p>
+
+              <select
+                onChange={(e) => {
+                  setMonth(e.target.value);
+                }}
+                value={month}
+                className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+              >
+                <option>Select Month</option>
+                <option value='1'>January</option>
+                <option value='2'>February</option>
+                <option value='3'>March</option>
+                <option value='4'>April</option>
+                <option value='5'>May</option>
+                <option value='6'>June</option>
+                <option value='7'>July</option>
+                <option value='8'>August</option>
+                <option value='9'>September</option>
+                <option value='10'>October</option>
+                <option value='11'>November</option>
+                <option value='12'>December</option>
+              </select>
+            </div>
+
+            <div className='col-span-2 w-full flex items-end'>
+              <PrimaryBtn id='addBtn' type='submit' text='Collect Fees' />
+            </div>
           </div>
-
-          {/* Fee Payable */}
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Fee Payable</p>
-            <input
-              type='text'
-              className='appearance-none w-full bg-gray-100 p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              value={feePayable}
-              required
-              readOnly
-            />
-          </div>
-
-          {/* Amount */}
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Amount</p>
-            <input
-              type='number'
-              className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              onChange={(e) => {
-                setAmount(e.target.value);
-              }}
-              value={amount}
-              required
-            />
-          </div>
-
-          {/* Month */}
-          <div className='w-full'>
-            <p className='py-1 text-gray-700'>Month</p>
-
-            <select
-              onChange={(e) => {
-                setMonth(e.target.value);
-              }}
-              value={month}
-              className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-            >
-              <option>Select Month</option>
-              <option value='1'>January</option>
-              <option value='2'>February</option>
-              <option value='3'>March</option>
-              <option value='4'>April</option>
-              <option value='5'>May</option>
-              <option value='6'>June</option>
-              <option value='7'>July</option>
-              <option value='8'>August</option>
-              <option value='9'>September</option>
-              <option value='10'>October</option>
-              <option value='11'>November</option>
-              <option value='12'>December</option>
-            </select>
-          </div>
-
-          <div className='col-span-2 w-full flex items-end'>
-            <button
-              id='addBtn'
-              onClick={OnSubmit}
-              className='w-full p-3 bg-gray-800 text-white rounded-md transition-all hover:bg-gray-900 transform scale-100 active:scale-95'
-            >
-              Collect Fees
-            </button>
-          </div>
-        </div>
+        </form>
 
         <br />
         <br />
 
         <div className='w-full flex space-x-3 border-t border-b py-2'>
-          <button className='flex w-auto p-3 px-5 bg-white hover:bg-gray-200 rounded-md transition-all transform scale-100 active:scale-95'>
-            <span className='p-1 mr-3'>
-              <BsViewList />
-            </span>
-            View All Fee Collections
-          </button>
+          <SecondaryBtn
+            fullWidth={false}
+            icon={<BsViewList />}
+            text='View All Fee Collections'
+          />
         </div>
 
         <br />
@@ -281,8 +285,6 @@ const CollectFees = () => {
                 const month = date.toLocaleString("en-US", {
                   month: "long",
                 });
-
-                console.log(month);
 
                 return (
                   <tr key={fees.fee_collection_id}>
