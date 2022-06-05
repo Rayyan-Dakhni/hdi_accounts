@@ -51,8 +51,6 @@ const AssignTeacher = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setSubjects(data);
       });
   }
@@ -64,8 +62,6 @@ const AssignTeacher = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setAssigns(data);
       });
   }
@@ -146,8 +142,6 @@ const AssignTeacher = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setAlertMsg(data.message);
 
         ShowAlert("success");
@@ -199,7 +193,6 @@ const AssignTeacher = () => {
               >
                 <option>Select Teacher</option>
                 {teachers.map((teacher, index, arr) => {
-                  console.log(arr);
                   return (
                     <option key={teacher.teacher_id} value={teacher.teacher_id}>
                       {teacher.name}

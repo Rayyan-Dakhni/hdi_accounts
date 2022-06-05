@@ -40,7 +40,6 @@ const Home = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setStudents(data);
       });
   }
@@ -52,8 +51,6 @@ const Home = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setTotalStudents(data.total);
       });
   }
@@ -136,8 +133,6 @@ const Home = () => {
               {students.map((student, index) => {
                 const remaining =
                   parseInt(student.total) - parseInt(student.collected) || 0;
-
-                console.log(remaining);
 
                 if (remaining > 0) {
                   return (

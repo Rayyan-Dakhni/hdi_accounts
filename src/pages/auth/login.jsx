@@ -41,8 +41,6 @@ const Login = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setAlertMsg(data.message);
 
         if (data.userFound === 1) {

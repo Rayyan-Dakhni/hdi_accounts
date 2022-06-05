@@ -42,8 +42,6 @@ const AddUser = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setAlertMsg(data.message);
 
         if (data.error) {

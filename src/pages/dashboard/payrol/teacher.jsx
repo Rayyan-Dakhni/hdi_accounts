@@ -18,8 +18,6 @@ const TeacherPayroll = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         setDetails(data);
       });
   }

@@ -138,8 +138,6 @@ const AddEnrollment = () => {
       fees: fees,
     };
 
-    console.log(enrolment);
-
     fetch(`${apiUrl}/enrolments/`, {
       method: "post",
       mode: "cors",
