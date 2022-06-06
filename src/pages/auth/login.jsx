@@ -31,7 +31,7 @@ const Login = () => {
       password: password,
     };
 
-    fetch(`${apiUrl}/auth/login`, {
+    fetch(`${apiUrl}/auth/login/`, {
       method: "post",
       mode: "cors",
       headers: {
