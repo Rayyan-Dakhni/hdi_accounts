@@ -49,7 +49,7 @@ const Sidebar = () => {
           icon={<BsFillCollectionFill />}
           text='Subjects Management'
           onClick={() => {
-            navigate("/dashboard/subject", { replace: true });
+            navigate("/dashboard/subjects/view", { replace: true });
           }}
         />
 

@@ -88,7 +88,7 @@ const AddSection = () => {
   }, []);
 
   useEffect(() => {
-    if (subject) {
+    if (subject && subject !== "Choose Subject") {
       FetchTeachersForTheSubject(subject);
     }
   }, [subject]);
@@ -98,52 +98,82 @@ const AddSection = () => {
 
     AddLoaderToBtn("addBtn");
 
-    const newSection = {
-      name: sectionName,
-      subject_id: subject,
-      teacher_id: teacher,
-      studentClass: studentClass,
-    };
+    if (sectionName && subject && teacher && studentClass) {
+      if (
+        sectionName !== "" &&
+        subject !== "Choose Subject" &&
+        teacher !== "Select Teacher" &&
+        studentClass !== "Select Class"
+      ) {
+        const newSection = {
+          name: sectionName,
+          subject_id: subject,
+          teacher_id: teacher,
+          studentClass: studentClass,
+        };
 
-    fetch(`${apiUrl}/sections/`, {
-      method: "post",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newSection),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.result) {
-          // show success alert as new subject created
-          setAlertMsg(data.message);
+        fetch(`${apiUrl}/sections/`, {
+          method: "post",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newSection),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.result) {
+              // show success alert as new subject created
+              setAlertMsg(data.message);
 
-          ShowAlert("success");
+              ShowAlert("success");
 
-          // call to fetch all sections
-          FetchAllSections();
+              // call to fetch all sections
+              FetchAllSections();
 
-          setSectionName("");
-          setSubject("Choose Subject");
-          setTeacher("Select a subject first");
+              setSectionName("");
+              setSubject("Choose Subject");
+              setTeacher("Select Teacher");
+              setStudentClass("Select Class");
 
-          setTimeout(() => {
-            HideAlert("success");
-          }, 3000);
-        } else {
-          // show error alert
-          setAlertMsg("Something went wrong. Please try again later");
+              setTimeout(() => {
+                HideAlert("success");
+              }, 3000);
+            } else {
+              // show error alert
+              setAlertMsg("Something went wrong. Please try again later");
 
-          ShowAlert("error");
+              ShowAlert("error");
 
-          setTimeout(() => {
-            HideAlert("error");
-          }, 3000);
-        }
+              setTimeout(() => {
+                HideAlert("error");
+              }, 3000);
+            }
 
-        AddTextToBtn("addBtn", "Add Subject");
-      });
+            AddTextToBtn("addBtn", "Add Subject");
+          });
+      } else {
+        setAlertMsg("Please Select All Fields First");
+
+        ShowAlert("error");
+
+        document.getElementById("addBtn").innerHTML = "Add Section";
+
+        setTimeout(() => {
+          HideAlert("error");
+        }, 3000);
+      }
+    } else {
+      setAlertMsg("Please Select All Fields First");
+
+      ShowAlert("error");
+
+      document.getElementById("addBtn").innerHTML = "Add Section";
+
+      setTimeout(() => {
+        HideAlert("error");
+      }, 3000);
+    }
   }
 
   return (
@@ -195,7 +225,7 @@ const AddSection = () => {
                 value={subject}
                 className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
               >
-                <option>Choose Subject</option>
+                <option value={null}>Choose Subject</option>
 
                 {/* Displaying subjects from the database */}
                 {subjects.map((sub) => {
@@ -285,11 +315,11 @@ const AddSection = () => {
               {sections.map((section, index) => {
                 return (
                   <tr key={section.section_id}>
-                    <td className='text-center py-2'>{index + 1}</td>
-                    <td className='text-center py-2'>{section.section}</td>
-                    <td className='text-center py-2'>{section.teacher}</td>
-                    <td className='text-center py-2'>{section.subject}</td>
-                    <td className='text-center py-2'>{section.class}</td>
+                    <td className='text-left p-2'>{index + 1}</td>
+                    <td className='text-left p-2'>{section.section}</td>
+                    <td className='text-left p-2'>{section.teacher}</td>
+                    <td className='text-left p-2'>{section.subject}</td>
+                    <td className='text-left p-2'>{section.class}</td>
                     <td className='py-2'>
                       <div className='w-full flex space-x-3'>
                         <button className='w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white'>

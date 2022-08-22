@@ -1,3 +1,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.alert-hidden {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-1.25rem);
+}
+
+.alert-show {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Ripple effect */
+.ripple {
+  background-position: center;
+  transition: background 0.5s;
+}
+.ripple:hover {
+  background: #334155 radial-gradient(circle, transparent 1%, #0f172a 1%) center/15000%;
+}
+.ripple:active {
+  background-size: 100%;
+  transition: background 0s;
+}

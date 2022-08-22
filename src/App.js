@@ -14,6 +14,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AssignTeacher from "./pages/dashboard/teachers/assign";
 import Payrol from "./pages/dashboard/payrol/view";
 import TeacherPayroll from "./pages/dashboard/payrol/teacher";
+import ViewSubjects from "./pages/dashboard/subjects/view";
+import EditSubject from "./pages/dashboard/subjects/edit";
 
 function App() {
   return (
@@ -25,7 +27,12 @@ function App() {
 
         <Route path='/' index element={<Login />} />
         <Route path='/dashboard' index element={<Home />} />
-        <Route path='/dashboard/subject' element={<AddSubject />} />
+
+        {/* Subjects Routes */}
+        <Route path='/dashboard/subjects/add' element={<AddSubject />} />
+        <Route path='/dashboard/subjects/view' element={<ViewSubjects />} />
+        <Route path='/dashboard/subjects/edit' element={<EditSubject />} />
+
         <Route path='/dashboard/section' element={<AddSection />} />
         <Route path='/dashboard/teacher' element={<AddTeacher />} />
         <Route path='/dashboard/assign' element={<AssignTeacher />} />

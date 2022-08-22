@@ -39,6 +39,7 @@ const AddEnrollment = () => {
   const [teacher, setTeacher] = useState();
   const [section, setSection] = useState();
   const [fees, setFees] = useState("");
+  const [dateOfEnrolment, setDateOfEnrolment] = useState(new Date());
 
   function FetchAllStudents() {
     fetch(`${apiUrl}/students/`, {
@@ -292,7 +293,7 @@ const AddEnrollment = () => {
                 {sections.map((section) => {
                   return (
                     <option key={section.section_id} value={section.section_id}>
-                      {section.name}
+                      {section.name} - {section.class}
                     </option>
                   );
                 })}
@@ -309,6 +310,21 @@ const AddEnrollment = () => {
                 }}
                 value={fees}
                 placeholder='eg. 5000'
+              />
+            </div>
+
+            {/* Date of Enrolment */}
+            <div className='w-full'>
+              <p className='py-1 text-gray-700'>Date of Enrolment</p>
+
+              <input
+                type='date'
+                className='appearance-none w-full text-black bg-white p-2.5 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+                onChange={(e) => {
+                  setDateOfEnrolment(e.target.value);
+                }}
+                value={dateOfEnrolment}
+                required
               />
             </div>
 

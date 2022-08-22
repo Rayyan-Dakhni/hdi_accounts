@@ -22,7 +22,7 @@ import {
   ShowAlert,
 } from "../../../helpers/functions";
 
-const AddStudent = () => {
+const EditStudent = () => {
   const navigate = useNavigate();
 
   const [alertMsg, setAlertMsg] = useState();
@@ -297,4 +297,4 @@ const AddStudent = () => {
   );
 };
 
-export default AddStudent;
+export default EditStudent;

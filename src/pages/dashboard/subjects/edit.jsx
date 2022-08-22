@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { BsViewList } from "react-icons/bs";
+import { AiFillBackward } from "react-icons/ai";
 
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ErrorAlert from "../../../components/alerts/error";
 import SuccessAlert from "../../../components/alerts/success";
 import InfoAlert from "../../../components/alerts/info";
@@ -11,18 +11,14 @@ import SecondaryBtn from "../../../components/buttons/secondary";
 import Textfield from "../../../components/inputs/textfield";
 import Sidebar from "../../../components/navigation/sidebar";
 import apiUrl from "../../../config";
-import {
-  AddLoaderToBtn,
-  AddTextToBtn,
-  HideAlert,
-  IsAdminLoggedIn,
-  ShowAlert,
-} from "../../../helpers/functions";
+import { IsAdminLoggedIn, ShowAlert } from "../../../helpers/functions";
 
-const AddSubject = () => {
+const EditSubject = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [subjectName, setSubjectName] = useState("");
+  const [id, setId] = useState();
+  const [name, setName] = useState("");
 
   const [alertMsg, setAlertMsg] = useState();
 
@@ -36,52 +32,41 @@ const AddSubject = () => {
         navigate("/", { replace: true });
       }, 3000);
     }
+
+    if (location.state.subject) {
+      setId(location.state.subject.subject_id);
+      setName(location.state.subject.name);
+    }
   }, []);
 
-  function OnSubmit(e) {
+  const OnSubmit = (e) => {
     e.preventDefault();
 
-    AddLoaderToBtn("addSubBtn");
-
-    const newSubject = {
-      name: subjectName,
+    const updatedSubject = {
+      id: id,
+      name: name,
     };
 
     fetch(`${apiUrl}/subjects/`, {
-      method: "post",
+      method: "put",
       mode: "cors",
+      body: JSON.stringify(updatedSubject),
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(newSubject),
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.result) {
-          // show success alert as new subject created
-          setAlertMsg(data.message);
+        console.log(data);
 
-          ShowAlert("success");
+        setAlertMsg("Subject Updated");
+        ShowAlert("success");
 
-          setSubjectName("");
-
-          setTimeout(() => {
-            HideAlert("success");
-          }, 2000);
-        } else {
-          // show error alert
-          setAlertMsg("Something went wrong. Please try again later");
-
-          ShowAlert("error");
-
-          setTimeout(() => {
-            HideAlert("error");
-          }, 2000);
-        }
-
-        AddTextToBtn("addSubBtn", "Add Subject");
+        setTimeout(() => {
+          navigate("/dashboard/subjects/view");
+        }, 2000);
       });
-  }
+  };
 
   return (
     <div className='w-screen min-h-screen flex'>
@@ -102,8 +87,8 @@ const AddSubject = () => {
               navigate("/dashboard/subjects/view");
             }}
             fullWidth={false}
-            icon={<BsViewList />}
-            text='View All Subjects'
+            icon={<AiFillBackward />}
+            text='Go Back'
           />
         </div>
 
@@ -117,15 +102,19 @@ const AddSubject = () => {
               <Textfield
                 type='text'
                 onChange={(e) => {
-                  setSubjectName(e.target.value);
+                  setName(e.target.value);
                 }}
-                value={subjectName}
+                value={name}
                 placeholder='eg. Mathematics'
               />
             </div>
 
             <div className='w-full flex items-end'>
-              <PrimaryBtn id='addSubBtn' type='submit' text='Add Subject' />
+              <PrimaryBtn
+                id='edit-subject-btn'
+                type='submit'
+                text='Edit Subject'
+              />
             </div>
           </div>
         </form>
@@ -137,4 +126,4 @@ const AddSubject = () => {
   );
 };
 
-export default AddSubject;
+export default EditSubject;

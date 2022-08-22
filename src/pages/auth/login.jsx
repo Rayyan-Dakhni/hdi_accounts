@@ -8,10 +8,13 @@ import Textfield from "../../components/inputs/textfield";
 import apiUrl from "../../config";
 import {
   AddLoaderToBtn,
+  AddRippleToButton,
   AddTextToBtn,
   HideAlert,
   ShowAlert,
 } from "../../helpers/functions";
+
+import Logo from "../../assets/logo.PNG";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -58,9 +61,10 @@ const Login = () => {
             // show error alert as the password was incorrect
             ShowAlert("error");
 
-            AddTextToBtn("loginBtn", "Login");
+            console.log("show alert called");
 
             setTimeout(() => {
+              AddTextToBtn("loginBtn", "Login");
               HideAlert("error");
             }, 3000);
           }
@@ -74,68 +78,97 @@ const Login = () => {
             HideAlert("error");
           }, 3000);
         }
+      })
+      .catch((err) => {
+        console.log(err);
       });
   }
 
   return (
-    <div className='w-screen min-h-screen flex flex-col space-y-5 justify-center items-center bg-white'>
+    <div className='w-screen min-h-screen flex flex-col sm:flex-row space-y-5 justify-center items-center bg-white overflow-auto'>
       {/* Alerts */}
       <SuccessAlert id='success' heading='Success' alertMessage={alertMsg} />
       <ErrorAlert id='error' heading='Error' alertMessage={alertMsg} />
 
-      <h1 className='font-semibold text-6xl font-serif'>Welcome Back</h1>
-      <h3 className='text-gray-500 text-lg'>Please login to continue</h3>
+      <div className='w-full bg-white'>
+        <img src={Logo} alt='Logo' className='w-32 sm:w-80 mx-auto' />
+      </div>
 
-      <form
-        className='w-full px-10 sm:px-0 sm:w-1/3 lg:w-1/4'
-        onSubmit={OnSubmit}
-      >
-        {/* Username */}
-        <div className='w-full'>
-          <p className='py-1'>Username</p>
-          <Textfield
-            type='text'
-            onChange={(e) => {
-              setUsername(e.target.value);
-            }}
-            value={username}
-          />
-        </div>
-
-        {/* Password */}
-        <div className='w-full'>
-          <p className='py-1'>Password</p>
-          <Textfield
-            type='password'
-            onChange={(e) => {
-              setPassword(e.target.value);
-            }}
-            value={password}
-          />
-        </div>
-
-        <div
-          onClick={() => {
-            // navigate to forget password page
-          }}
-          className='w-full mt-2 flex justify-end text-gray-500 hover:text-blue-500 cursor-pointer'
-        >
-          Forgot Password?
-        </div>
+      <div className='w-full p-5 sm:p-10'>
+        <h1 className='font-semibold text-2xl sm:text-4xl text-center font-serif'>
+          Welcome Back
+        </h1>
+        <h3 className='text-gray-500 text-center text-xs sm:text-md'>
+          Please login to continue
+        </h3>
 
         <br />
 
-        <div className='w-full'>
-          <PrimaryBtn id='loginBtn' type='submit' text='Login' />
-          {/* <button
-            id='loginBtn'
-            type='submit'
-            className='p-3 w-full bg-gradient-to-r from-blue-800 to-blue-500 text-white font-sans font-semibold text-lg tracking-wider rounded-lg transition-all active:scale-95'
+        <form className='w-full px-5 lg:px-10 xl:px-32' onSubmit={OnSubmit}>
+          {/* Username */}
+          <div className='w-full'>
+            <p className='py-1 text-sm text-gray-600 uppercase'>Username</p>
+            <Textfield
+              type='text'
+              onChange={(e) => {
+                setUsername(e.target.value);
+              }}
+              value={username}
+            />
+          </div>
+
+          {/* Password */}
+          <div className='w-full'>
+            <p className='py-1 mt-2 text-sm text-gray-600 uppercase'>
+              Password
+            </p>
+            <Textfield
+              type='password'
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+              value={password}
+            />
+          </div>
+
+          <div
+            onClick={() => {
+              // navigate to forget password page
+            }}
+            className='w-full mt-2 flex justify-end text-gray-500 hover:text-blue-500 cursor-pointer'
           >
-            Login
-          </button> */}
-        </div>
-      </form>
+            Forgot Password?
+          </div>
+
+          <br />
+
+          <div className='w-full'>
+            <PrimaryBtn
+              onClick={(e) => {
+                AddRippleToButton(e);
+              }}
+              id='loginBtn'
+              type='submit'
+              text='Login'
+            />
+
+            {/* <br />
+            <br />
+            <button
+              id=''
+              type='button'
+              className='relative overflow-hidden w-full p-3 bg-gray-800 text-white rounded-md transition-all hover:bg-gray-900 transform scale-100'
+              onClick={(e) => {
+                AddRippleToButton(e);
+
+                AddLoaderToBtn("demoBtn");
+              }}
+            >
+              <div id='demoBtn'>Login</div>
+            </button> */}
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
