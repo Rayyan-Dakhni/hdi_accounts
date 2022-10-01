@@ -13,22 +13,27 @@ import {
 import { useNavigate } from "react-router-dom";
 import SecondaryBtn from "../buttons/secondary";
 
+import Logo from "../../assets/logo.PNG";
+
 const Sidebar = () => {
   const navigate = useNavigate();
 
   return (
     <div className='w-68 flex-none bg-gray-900 h-screen border-r overflow-auto'>
-      <div className='flex w-full px-10 pt-10 space-x-5'>
-        <div
-          className='w-14 h-14 rounded-md bg-blue-600'
-          style={{
-            backgroundImage: `url('https://i.pinimg.com/originals/9d/0a/0e/9d0a0e0f1798ad455cb4be47f8da992d.jpg')`,
-            backgroundSize: "100% 100%",
-          }}
-        ></div>
+      <div className='flex w-full justify-center items-center px-5 pt-10 space-x-3'>
+        <img
+          src={Logo}
+          alt='Logo'
+          className='w-20 h-20 rounded-full bg-white p-2'
+        />
+
         <div>
-          <h3 className='font-semibold text-white text-lg'>Hamza Dakhni</h3>
-          <p className='text-gray-400 font-light text-sm'>Admin Dashboard</p>
+          <h3 className='font-semibold text-center text-white text-lg'>
+            Hamza Dakhni <br /> Institute
+          </h3>
+          <p className='text-gray-400 text-center font-light text-sm'>
+            Admin Dashboard
+          </p>
         </div>
       </div>
 
@@ -59,19 +64,19 @@ const Sidebar = () => {
           icon={<BsFillFilePersonFill />}
           text='Teachers Management'
           onClick={() => {
-            navigate("/dashboard/teacher", { replace: true });
+            navigate("/dashboard/teacher/view", { replace: true });
           }}
         />
 
         {/* Assign Subject */}
-        <SecondaryBtn
+        {/* <SecondaryBtn
           fullWidth={true}
           icon={<BsFillFilePersonFill />}
           text='Assign Teacher'
           onClick={() => {
             navigate("/dashboard/assign", { replace: true });
           }}
-        />
+        /> */}
 
         {/* Sections Management */}
         <SecondaryBtn
@@ -79,7 +84,7 @@ const Sidebar = () => {
           icon={<BsFillPieChartFill />}
           text='Sections Management'
           onClick={() => {
-            navigate("/dashboard/section", { replace: true });
+            navigate("/dashboard/section/view", { replace: true });
           }}
         />
 
@@ -89,19 +94,19 @@ const Sidebar = () => {
           icon={<BsBookFill />}
           text='Students Management'
           onClick={() => {
-            navigate("/dashboard/student", { replace: true });
+            navigate("/dashboard/student/view", { replace: true });
           }}
         />
 
         {/* Student Enrolments */}
-        <SecondaryBtn
+        {/* <SecondaryBtn
           fullWidth={true}
           icon={<BsFillCreditCardFill />}
           text='Student Enrolments'
           onClick={() => {
             navigate("/dashboard/enrolment", { replace: true });
           }}
-        />
+        /> */}
 
         {/* Fees Management */}
         <SecondaryBtn

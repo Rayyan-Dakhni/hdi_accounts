@@ -23,7 +23,7 @@ import {
   ShowAlert,
 } from "../../../helpers/functions";
 
-const AddSection = () => {
+const EditSection = () => {
   const navigate = useNavigate();
 
   const [sectionName, setSectionName] = useState("");
@@ -62,6 +62,17 @@ const AddSection = () => {
       });
   }
 
+  function FetchAllSections() {
+    fetch(`${apiUrl}/sections/`, {
+      method: "get",
+      mode: "cors",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setSections(data);
+      });
+  }
+
   useEffect(() => {
     if (!IsAdminLoggedIn()) {
       setAlertMsg("Not Authorised. Please Login First. Redirecting...");
@@ -74,6 +85,7 @@ const AddSection = () => {
     }
 
     FetchAllSubjects();
+    FetchAllSections();
   }, []);
 
   useEffect(() => {
@@ -116,6 +128,9 @@ const AddSection = () => {
               setAlertMsg(data.message);
 
               ShowAlert("success");
+
+              // call to fetch all sections
+              FetchAllSections();
 
               setSectionName("");
               setSubject("Choose Subject");
@@ -180,6 +195,8 @@ const AddSection = () => {
 
           ShowAlert("success");
 
+          FetchAllSections();
+
           setTimeout(() => {
             HideAlert("success");
           }, 3000);
@@ -203,14 +220,11 @@ const AddSection = () => {
       <div className='w-full h-screen overflow-auto bg-white p-10'>
         <h1 className='font-semibold text-3xl'>Sections Management</h1>
         <br />
-        <div className='w-full flex justify-end space-x-3 border-t border-b py-2'>
+        <div className='w-full flex space-x-3 border-t border-b py-2'>
           <SecondaryBtn
             fullWidth={false}
-            icon={<BsViewList />}
-            text='View All Sections'
-            onClick={() => {
-              navigate("/dashboard/section/view");
-            }}
+            icon={<BsFillPlusSquareFill />}
+            text='Add New Section'
           />
         </div>
 
@@ -302,9 +316,87 @@ const AddSection = () => {
             </div>
           </div>
         </form>
+
+        <br />
+        <br />
+
+        <div className='w-full flex space-x-3 border-t border-b py-2'>
+          <SecondaryBtn
+            fullWidth={false}
+            icon={<BsViewList />}
+            text='View All Sections'
+          />
+        </div>
+
+        <br />
+
+        {sections.length > 0 ? (
+          <table className='w-full table-auto'>
+            <thead>
+              <tr className=''>
+                <th className='pb-3'>Id</th>
+                <th className='pb-3'>Section Name</th>
+                <th className='pb-3'>Teachers</th>
+                <th className='pb-3'>Subject</th>
+                <th className='pb-3'>Class</th>
+                <th className='pb-3'>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sections.map((section, index) => {
+                return (
+                  <tr key={section.section_id}>
+                    <td className='text-left p-2'>{index + 1}</td>
+                    <td className='text-left p-2'>{section.section}</td>
+                    <td className='text-left p-2'>{section.teacher}</td>
+                    <td className='text-left p-2'>{section.subject}</td>
+                    <td className='text-left p-2'>{section.class}</td>
+                    <td className='py-2 text-center'>
+                      <div className='w-full flex space-x-3'>
+                        <div className='relative group w-auto'>
+                          <div className='absolute text-xs w-auto -top-8 left-1 bg-gray-900 text-white shadow-lg p-1 rounded-md transition-all invisible transform scale-50 group-hover:visible group-hover:scale-100'>
+                            Edit
+                          </div>
+                          <button
+                            onClick={() => {}}
+                            className='w-10 h-10 text-center text-blue-600 hover:bg-gray-200 rounded-full'
+                          >
+                            <AiFillEdit className='mx-auto' />
+                          </button>
+                        </div>
+
+                        <div className='relative group w-auto'>
+                          <div className='absolute text-xs w-auto -top-8 -left-1 bg-gray-900 text-white shadow-lg p-1 rounded-md transition-all invisible transform scale-50 group-hover:visible group-hover:scale-100'>
+                            Delete
+                          </div>
+                          <button
+                            onClick={() => {
+                              DeleteSection(section.section_id);
+                            }}
+                            className='w-10 h-10 text-center text-red-600 hover:bg-gray-200 rounded-full'
+                          >
+                            <AiFillDelete className='mx-auto' />
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <div className='w-full p-5'>
+            <div className='text-8xl text-gray-900'>
+              <BsFillPieChartFill className='mx-auto' />
+            </div>
+            <br />
+            <h3 className='text-center'>No sections added yet</h3>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default AddSection;
+export default EditSection;

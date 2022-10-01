@@ -15,8 +15,6 @@ const Payrol = () => {
 
   const [alertMsg, setAlertMsg] = useState();
 
-  const [students, setStudents] = useState([]);
-
   const [payrolls, setPayrolls] = useState([]);
 
   function GetPayrolls() {
@@ -80,8 +78,6 @@ const Payrol = () => {
             </thead>
             <tbody>
               {payrolls.map((payroll, index) => {
-                const teacher_fees = payroll.total_fees * (payroll.rate / 100);
-
                 return (
                   <tr
                     className='text-gray-500 font-light border-b-2'
@@ -91,28 +87,20 @@ const Payrol = () => {
                     <td className='text-left text-black p-3 font-semibold rounded-md'>
                       {payroll.name}
                     </td>
-                    <td className='text-left p-3 rounded-md'>{payroll.rate}</td>
+                    <td className='text-left p-3 rounded-md'>
+                      {payroll.rate}%
+                    </td>
                     <td className='text-left font-semibold text-green-600 p-3 rounded-md'>
-                      Rs. {payroll.total_fees}
+                      Rs. {payroll.amount_collected}
                     </td>
                     <td className='text-left font-semibold text-red-600 p-3 rounded-md'>
-                      Rs. {teacher_fees}
+                      Rs. {payroll.amount_to_pay}
                     </td>
                     <td className='text-left font-semibold text-red-600 p-3 rounded-md'>
                       <PrimaryBtn
                         type='button'
                         text='View Reciept'
-                        onClick={() => {
-                          navigate("/dashboard/payroll/teacher", {
-                            replace: false,
-                            state: {
-                              teacher_id: payroll.teacher_id,
-                              teacher_name: payroll.name,
-                              rate: payroll.rate,
-                              amount: teacher_fees,
-                            },
-                          });
-                        }}
+                        onClick={() => {}}
                       />
                     </td>
                   </tr>

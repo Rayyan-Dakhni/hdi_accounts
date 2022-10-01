@@ -13,9 +13,9 @@ const Home = () => {
 
   const [alertMsg, setAlertMsg] = useState();
 
-  const [feesRemaining, setFeesRemaining] = useState();
-  const [percentageCollected, setPercentageCollected] = useState();
-  const [totalStudents, setTotalStudents] = useState();
+  const [feesRemaining, setFeesRemaining] = useState(0);
+  const [percentageCollected, setPercentageCollected] = useState(0);
+  const [totalStudents, setTotalStudents] = useState(0);
 
   const [students, setStudents] = useState([]);
 
@@ -93,7 +93,7 @@ const Home = () => {
           <AnalyticsCard
             icon={<BsFillPeopleFill />}
             text={`${totalStudents} Students`}
-            footerText='Total number or student enroled'
+            footerText='Total number of students enrolled'
           />
 
           {/* Fees Remaining */}

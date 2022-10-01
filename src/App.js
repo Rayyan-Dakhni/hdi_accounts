@@ -16,6 +16,12 @@ import Payrol from "./pages/dashboard/payrol/view";
 import TeacherPayroll from "./pages/dashboard/payrol/teacher";
 import ViewSubjects from "./pages/dashboard/subjects/view";
 import EditSubject from "./pages/dashboard/subjects/edit";
+import ViewTeacher from "./pages/dashboard/teachers/view";
+import EditTeacher from "./pages/dashboard/teachers/edit";
+import ViewSection from "./pages/dashboard/sections/view";
+import EditSection from "./pages/dashboard/sections/edit";
+import ViewStudent from "./pages/dashboard/students/view";
+import EditStudent from "./pages/dashboard/students/edit";
 
 function App() {
   return (
@@ -33,13 +39,26 @@ function App() {
         <Route path='/dashboard/subjects/view' element={<ViewSubjects />} />
         <Route path='/dashboard/subjects/edit' element={<EditSubject />} />
 
-        <Route path='/dashboard/section' element={<AddSection />} />
-        <Route path='/dashboard/teacher' element={<AddTeacher />} />
+        <Route path='/dashboard/teacher/add' element={<AddTeacher />} />
+        <Route path='/dashboard/teacher/view' element={<ViewTeacher />} />
+        <Route path='/dashboard/teacher/edit' element={<EditTeacher />} />
+
         <Route path='/dashboard/assign' element={<AssignTeacher />} />
-        <Route path='/dashboard/student' element={<AddStudent />} />
+
+        <Route path='/dashboard/section/add' element={<AddSection />} />
+        <Route path='/dashboard/section/view' element={<ViewSection />} />
+        <Route path='/dashboard/section/edit' element={<EditSection />} />
+
+        <Route path='/dashboard/student/add' element={<AddStudent />} />
+        <Route path='/dashboard/student/view' element={<ViewStudent />} />
+        <Route path='/dashboard/student/edit' element={<EditStudent />} />
+
         <Route path='/dashboard/fees' element={<CollectFees />} />
+
         <Route path='/dashboard/enrolment' element={<AddEnrollment />} />
+
         <Route path='/dashboard/payroll' element={<Payrol />} />
+
         <Route path='/dashboard/payroll/teacher' element={<TeacherPayroll />} />
       </Routes>
     </BrowserRouter>

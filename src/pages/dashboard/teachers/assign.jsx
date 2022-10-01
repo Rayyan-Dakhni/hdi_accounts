@@ -1,10 +1,12 @@
 import React, { useEffect } from "react";
+import { useRef } from "react";
 import { useState } from "react";
 import {
   BsFillFilePersonFill,
   BsFillPlusSquareFill,
   BsViewList,
 } from "react-icons/bs";
+import { AiFillDelete } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import ErrorAlert from "../../../components/alerts/error";
 import InfoAlert from "../../../components/alerts/info";
@@ -31,7 +33,8 @@ const AssignTeacher = () => {
   const [assigns, setAssigns] = useState([]);
 
   const [teacher, setTeacher] = useState();
-  const [subject, setSubject] = useState();
+
+  const subjectsMenu = useRef(null);
 
   function FetchAllTeachers() {
     fetch(`${apiUrl}/teachers/`, {
@@ -55,17 +58,6 @@ const AssignTeacher = () => {
       });
   }
 
-  function FetchAllAssigns() {
-    fetch(`${apiUrl}/assign/`, {
-      method: "get",
-      mode: "cors",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setAssigns(data);
-      });
-  }
-
   useEffect(() => {
     if (!IsAdminLoggedIn()) {
       setAlertMsg("Not Authorised. Please Login First. Redirecting...");
@@ -79,7 +71,6 @@ const AssignTeacher = () => {
 
     FetchAllTeachers();
     FetchAllSubjects();
-    FetchAllAssigns();
   }, []);
 
   function OnSubmit(e) {
@@ -87,9 +78,19 @@ const AssignTeacher = () => {
 
     AddLoaderToBtn("addBtn");
 
+    const subject_ids = [];
+
+    const checkboxes = document.getElementsByName("subjects-checkboxes");
+
+    checkboxes.forEach((checkbox) => {
+      if (checkbox.checked) {
+        subject_ids.push(checkbox.value);
+      }
+    });
+
     const teacherAssign = {
       teacher_id: teacher,
-      subject_id: subject,
+      subject_ids: subject_ids,
     };
 
     fetch(`${apiUrl}/assign/`, {
@@ -103,13 +104,19 @@ const AssignTeacher = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.result) {
+          // clearing previous selected fields
+          checkboxes.forEach((checkbox) => {
+            if (checkbox.checked) {
+              checkbox.checked = false;
+            }
+          });
+
+          setTeacher("");
+
           // show success alert as new subject created
           setAlertMsg(data.message);
 
           ShowAlert("success");
-
-          // fetch all teachers again
-          FetchAllAssigns();
 
           setTimeout(() => {
             HideAlert("success");
@@ -130,29 +137,43 @@ const AssignTeacher = () => {
   }
 
   function DeleteAssignment(id) {
-    fetch(`${apiUrl}/assign/`, {
-      method: "delete",
-      mode: "cors",
-      body: JSON.stringify({
-        id: id,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setAlertMsg(data.message);
+    if (
+      window.confirm(
+        "Are you sure you want to delete this teachers assignment?"
+      )
+    ) {
+      fetch(`${apiUrl}/assign/`, {
+        method: "delete",
+        mode: "cors",
+        body: JSON.stringify({
+          id: id,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setAlertMsg(data.message);
 
-        ShowAlert("success");
+          ShowAlert("success");
 
-        FetchAllAssigns();
-
-        setTimeout(() => {
-          HideAlert("success");
-        }, 3000);
-      });
+          setTimeout(() => {
+            HideAlert("success");
+          }, 3000);
+        });
+    }
   }
+
+  // closing subjects menu when clicking outside
+  useEffect(() => {
+    document.addEventListener("mousedown", (e) => {
+      if (subjectsMenu.current && !subjectsMenu.current.contains(e.target)) {
+        const menu = document.getElementById("subjects-menu");
+        menu.style.display = "none";
+      }
+    });
+  }, []);
 
   return (
     <div className='w-screen min-h-screen flex'>
@@ -167,11 +188,14 @@ const AssignTeacher = () => {
       <div className='w-full h-screen overflow-auto bg-white p-10'>
         <h1 className='font-semibold text-3xl'>Assign Teachers</h1>
         <br />
-        <div className='w-full flex space-x-3 border-t border-b py-2'>
+        <div className='w-full flex justify-end space-x-3 border-t border-b py-2'>
           <SecondaryBtn
             fullWidth={false}
-            icon={<BsFillPlusSquareFill />}
-            text='Assign Teacher'
+            icon={<BsViewList />}
+            text='View All Teachers'
+            onClick={() => {
+              navigate("/dashboard/teacher/view");
+            }}
           />
         </div>
 
@@ -203,10 +227,50 @@ const AssignTeacher = () => {
             </div>
 
             {/* Subject */}
-            <div className='w-full'>
+            <div className='w-full relative'>
               <p className='py-1 text-gray-700'>Subject</p>
 
-              <select
+              <button
+                type='button'
+                className='p-3 border w-full text-left px-5 rounded-md'
+                onClick={(e) => {
+                  const menu = document.getElementById("subjects-menu");
+
+                  if (
+                    menu.style.display === "none" ||
+                    menu.classList.contains("hidden")
+                  ) {
+                    menu.classList.remove("hidden");
+                    menu.style.display = "block";
+                  } else {
+                    menu.style.display = "none";
+                  }
+                }}
+              >
+                Select Subjects
+              </button>
+
+              <div
+                id='subjects-menu'
+                ref={subjectsMenu}
+                className='absolute z-20 top-24 left-0 w-full h-80 border bg-white rounded-md shadow-md p-3 overflow-auto hidden'
+              >
+                {subjects.map((sub) => {
+                  return (
+                    <label className='p-2 rounded-md flex items-center space-x-2 hover:bg-gray-100'>
+                      <input
+                        type='checkbox'
+                        className='w-5 h-5 flex-none'
+                        value={sub.subject_id}
+                        name='subjects-checkboxes'
+                      />
+                      <span className=''>{sub.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {/* <select
                 onChange={(e) => {
                   setSubject(e.target.value);
                 }}
@@ -221,7 +285,7 @@ const AssignTeacher = () => {
                     </option>
                   );
                 })}
-              </select>
+              </select> */}
             </div>
 
             <div className='col-span-2 w-full flex items-end'>
@@ -229,63 +293,6 @@ const AssignTeacher = () => {
             </div>
           </div>
         </form>
-
-        <br />
-        <br />
-
-        <div className='w-full flex space-x-3 border-t border-b py-2'>
-          <SecondaryBtn
-            fullWidth={false}
-            icon={<BsViewList />}
-            text='View All Teacher Assigns'
-          />
-        </div>
-
-        <br />
-
-        {assigns.length > 0 ? (
-          <table className='w-full table-auto'>
-            <thead>
-              <tr className=''>
-                <th className='pb-3'>Id</th>
-                <th className='pb-3'>Teacher</th>
-                <th className='pb-3'>Subject</th>
-                <th className='pb-3'>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {assigns.map((assign, index) => {
-                return (
-                  <tr key={assign.teacher_subject_id}>
-                    <td className='text-center py-2'>{index + 1}</td>
-                    <td className='text-center py-2'>{assign.teacher_name}</td>
-                    <td className='text-center py-2'>{assign.subject_name}</td>
-                    <td className='py-2'>
-                      <div className='w-full flex space-x-3'>
-                        <button
-                          onClick={() => {
-                            DeleteAssignment(assign.teacher_subject_id);
-                          }}
-                          className='w-full p-2 bg-red-600 hover:bg-red-700 rounded-md text-white'
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        ) : (
-          <div className='w-full p-5'>
-            <div className='text-8xl text-gray-900'>
-              <BsFillFilePersonFill className='mx-auto' />
-            </div>
-            <br />
-            <h3 className='text-center'>No Teachers added yet</h3>
-          </div>
-        )}
       </div>
     </div>
   );

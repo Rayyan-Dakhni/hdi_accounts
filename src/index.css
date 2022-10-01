@@ -33,3 +33,10 @@
   background-size: 100%;
   transition: background 0s;
 }
+
+
+/* Accordion styles */
+.accordion {
+  transition: "max-height 0.3s ease-in-out";
+}
+

@@ -30,8 +30,11 @@ const CollectFees = () => {
   const [students, setStudents] = useState([]);
   const [feeCollections, setFeeCollections] = useState([]);
 
+  const [feesDetails, setFeesDetails] = useState([]);
+
   const [student, setStudent] = useState();
-  const [feePayable, setFeePayable] = useState("Select a student first");
+
+  const [feePayable, setFeePayable] = useState("0");
   const [amount, setAmount] = useState();
   const [month, setMonth] = useState();
 
@@ -68,6 +71,25 @@ const CollectFees = () => {
       });
   }
 
+  const GetFeesDetails = (id) => {
+    fetch(`${apiUrl}/fees/get/student/?student_id=${id}`)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+
+        setFeesDetails(data);
+
+        var amountPayable = 0;
+
+        if (data.length > 0) {
+          data.forEach((dt) => {
+            amountPayable += dt.amount_due;
+          });
+          setFeePayable(amountPayable);
+        }
+      });
+  };
+
   useEffect(() => {
     if (!IsAdminLoggedIn()) {
       setAlertMsg("Not Authorised. Please Login First. Redirecting...");
@@ -87,22 +109,32 @@ const CollectFees = () => {
     FetchData();
   }, []);
 
-  useEffect(() => {
-    if (student) {
-      FetchStudentFeePayable(student);
-    }
-  }, [student]);
+  // useEffect(() => {
+  //   if (student) {
+  //     FetchStudentFeePayable(student);
+  //   }
+  // }, [student]);
 
   function OnSubmit(e) {
     e.preventDefault();
 
-    AddLoaderToBtn("addBtn");
+    // AddLoaderToBtn("addBtn");
 
-    const fees = {
-      student_id: student,
-      amount: amount,
-      month: month,
-    };
+    const payableAmounts = document.getElementsByName("amount-paying");
+
+    const addFees = [];
+
+    payableAmounts.forEach((amount) => {
+      if (amount.value && amount.value > 0) {
+        addFees.push({
+          student_id: student,
+          section_id: amount.id,
+          amount: amount.value,
+        });
+      }
+    });
+
+    console.log(addFees);
 
     fetch(`${apiUrl}/fees/collect`, {
       method: "post",
@@ -110,40 +142,79 @@ const CollectFees = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(fees),
+      body: JSON.stringify({
+        data: addFees,
+      }),
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.result) {
-          // show success alert as new subject created
-          setAlertMsg(data.message);
+        console.log(data);
 
-          ShowAlert("success");
+        setAlertMsg("Fees Collected Successfully");
 
-          // fetch all fee collections again
-          FetchAllFeeCollections();
+        ShowAlert("success");
 
-          setStudent("Select student");
-          setAmount(0);
-          setFeePayable(0);
-          setMonth("Select month");
+        setTimeout(() => {
+          HideAlert("success");
+        }, 3000);
+      })
+      .catch((err) => {
+        setAlertMsg("Could not collect fees");
 
-          setTimeout(() => {
-            HideAlert("success");
-          }, 3000);
-        } else {
-          // show error alert
-          setAlertMsg("Something went wrong. Please try again later");
+        ShowAlert("error");
 
-          ShowAlert("error");
-
-          setTimeout(() => {
-            HideAlert("error");
-          }, 3000);
-        }
-
-        AddTextToBtn("addBtn", "Add Student");
+        setTimeout(() => {
+          HideAlert("error");
+        }, 3000);
+        console.log(err);
       });
+
+    // const fees = {
+    //   student_id: student,
+    //   amount: amount,
+    //   month: month,
+    // };
+
+    // fetch(`${apiUrl}/fees/collect`, {
+    //   method: "post",
+    //   mode: "cors",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(fees),
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     if (data.result) {
+    //       // show success alert as new subject created
+    //       setAlertMsg(data.message);
+
+    //       ShowAlert("success");
+
+    //       // fetch all fee collections again
+    //       FetchAllFeeCollections();
+
+    //       setStudent("Select student");
+    //       setAmount(0);
+    //       setFeePayable(0);
+    //       setMonth("Select month");
+
+    //       setTimeout(() => {
+    //         HideAlert("success");
+    //       }, 3000);
+    //     } else {
+    //       // show error alert
+    //       setAlertMsg("Something went wrong. Please try again later");
+
+    //       ShowAlert("error");
+
+    //       setTimeout(() => {
+    //         HideAlert("error");
+    //       }, 3000);
+    //     }
+
+    //     AddTextToBtn("addBtn", "Add Student");
+    //   });
   }
 
   return (
@@ -179,6 +250,7 @@ const CollectFees = () => {
               <select
                 onChange={(e) => {
                   setStudent(e.target.value);
+                  GetFeesDetails(e.target.value);
                 }}
                 value={student}
                 className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
@@ -200,14 +272,14 @@ const CollectFees = () => {
               <input
                 type='text'
                 className='appearance-none w-full bg-gray-100 p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-                value={feePayable}
+                value={`Rs. ${feePayable}`}
                 required
                 readOnly
               />
             </div>
 
             {/* Amount */}
-            <div className='w-full'>
+            {/* <div className='w-full'>
               <p className='py-1 text-gray-700'>Amount</p>
               <Textfield
                 type='number'
@@ -217,10 +289,10 @@ const CollectFees = () => {
                 value={amount}
                 placeholder='5000'
               />
-            </div>
+            </div> */}
 
             {/* Month */}
-            <div className='w-full'>
+            {/* <div className='w-full'>
               <p className='py-1 text-gray-700'>Month</p>
 
               <select
@@ -244,18 +316,58 @@ const CollectFees = () => {
                 <option value='11'>November</option>
                 <option value='12'>December</option>
               </select>
-            </div>
-
-            <div className='col-span-2 w-full flex items-end'>
-              <PrimaryBtn id='addBtn' type='submit' text='Collect Fees' />
-            </div>
+            </div> */}
           </div>
+
+          <br />
+
+          <hr />
+
+          <br />
+
+          {feesDetails.map((detail) => {
+            return (
+              <div key={detail.enrolment_id} className='grid grid-cols-3 gap-4'>
+                <p className='flex w-full items-end p-3'>
+                  {detail.section_name}
+                </p>
+
+                <div className='w-full'>
+                  <p className='py-1 text-gray-700'>Amount Due</p>
+
+                  <input
+                    type='text'
+                    className='appearance-none w-full bg-gray-100 p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+                    value={`Rs. ${detail.amount_due}`}
+                    required
+                    readOnly
+                  />
+                </div>
+
+                <div className='w-full'>
+                  <p className='py-1 text-gray-700'>Amount Being Payed</p>
+
+                  <input
+                    id={`${detail.section_id}`}
+                    placeholder={0}
+                    type='number'
+                    className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+                    name='amount-paying'
+                  />
+                </div>
+              </div>
+            );
+          })}
+
+          <br />
+
+          <PrimaryBtn id='addBtn' type='submit' text='Collect Fees' />
         </form>
 
         <br />
         <br />
 
-        <div className='w-full flex space-x-3 border-t border-b py-2'>
+        {/* <div className='w-full flex space-x-3 border-t border-b py-2'>
           <SecondaryBtn
             fullWidth={false}
             icon={<BsViewList />}
@@ -318,7 +430,7 @@ const CollectFees = () => {
             <br />
             <h3 className='text-center'>No Students added yet</h3>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

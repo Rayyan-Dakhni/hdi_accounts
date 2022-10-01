@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { BsViewList } from "react-icons/bs";
 
-import { useNavigate } from "react-router-dom";
+import { AiFillBackward } from "react-icons/ai";
+
+import { useLocation, useNavigate } from "react-router-dom";
 import ErrorAlert from "../../../components/alerts/error";
 import InfoAlert from "../../../components/alerts/info";
 import SuccessAlert from "../../../components/alerts/success";
@@ -19,8 +20,9 @@ import {
   ShowAlert,
 } from "../../../helpers/functions";
 
-const AddTeacher = () => {
+const EditTeacher = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [alertMsg, setAlertMsg] = useState();
 
@@ -37,52 +39,42 @@ const AddTeacher = () => {
         navigate("/", { replace: true });
       }, 3000);
     }
+
+    if (!location.state.teacher) {
+      navigate("/dashboard/teacher/view", { replace: true });
+    }
+
+    setTeacherName(location.state.teacher.name);
+    setRate(location.state.teacher.rate);
   }, []);
 
   function OnSubmit(e) {
     e.preventDefault();
 
-    AddLoaderToBtn("addBtn");
-
-    const newTeacher = {
+    const updatedTeacher = {
+      id: location.state.teacher.id,
       name: teacherName,
       rate: rate,
     };
 
     fetch(`${apiUrl}/teachers/`, {
-      method: "post",
+      method: "put",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(newTeacher),
+      body: JSON.stringify(updatedTeacher),
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.result) {
-          // show success alert as new subject created
-          setAlertMsg(data.message);
+        console.log(data);
 
-          ShowAlert("success");
+        setAlertMsg("Teacher Updated");
+        ShowAlert("success");
 
-          setTeacherName("");
-          setRate("");
-
-          setTimeout(() => {
-            HideAlert("success");
-          }, 3000);
-        } else {
-          // show error alert
-          setAlertMsg("Something went wrong. Please try again later");
-
-          ShowAlert("error");
-
-          setTimeout(() => {
-            HideAlert("error");
-          }, 3000);
-        }
-
-        AddTextToBtn("addBtn", "Add Subject");
+        setTimeout(() => {
+          navigate("/dashboard/teacher/view", { replace: true });
+        }, 1500);
       });
   }
 
@@ -101,12 +93,12 @@ const AddTeacher = () => {
         <br />
         <div className='w-full flex justify-end space-x-3 border-t border-b py-2'>
           <SecondaryBtn
-            fullWidth={false}
-            icon={<BsViewList />}
-            text='View All Teachers'
             onClick={() => {
               navigate("/dashboard/teacher/view");
             }}
+            fullWidth={false}
+            icon={<AiFillBackward />}
+            text='Go Back'
           />
         </div>
 
@@ -140,7 +132,7 @@ const AddTeacher = () => {
             </div>
 
             <div className='col-span-2 w-full flex items-end'>
-              <PrimaryBtn id='addBtn' type='submit' text='Add Teacher' />
+              <PrimaryBtn id='addBtn' type='submit' text='Edit Teacher' />
             </div>
           </div>
         </form>
@@ -149,4 +141,4 @@ const AddTeacher = () => {
   );
 };
 
-export default AddTeacher;
+export default EditTeacher;

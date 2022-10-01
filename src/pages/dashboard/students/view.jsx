@@ -23,7 +23,7 @@ import {
   ShowAlert,
 } from "../../../helpers/functions";
 
-const AddStudent = () => {
+const ViewStudent = () => {
   const navigate = useNavigate();
 
   const [alertMsg, setAlertMsg] = useState();
@@ -159,90 +159,91 @@ const AddStudent = () => {
         <div className='w-full flex justify-end space-x-3 border-t border-b py-2'>
           <SecondaryBtn
             fullWidth={false}
-            icon={<BsViewList />}
-            text='View All Students'
-            onClick={() => navigate("/dashboard/student/view")}
+            icon={<BsFillPlusSquareFill />}
+            text='Add New Student'
+            onClick={() => navigate("/dashboard/student/add")}
+          />
+
+          <SecondaryBtn
+            fullWidth={false}
+            icon={<BsFillPlusSquareFill />}
+            text='Enrol Student'
+            onClick={() => navigate("/dashboard/enrolment")}
           />
         </div>
 
         <br />
         <br />
 
-        <form onSubmit={OnSubmit}>
-          <div className='w-full grid grid-cols-2 gap-10'>
-            {/* Student Name */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Student Name</p>
-              <Textfield
-                type='text'
-                onChange={(e) => {
-                  setName(e.target.value);
-                }}
-                value={name}
-                placeholder='eg. Rayyan Dakhni'
-              />
+        {students.length > 0 ? (
+          <table className='w-full table-auto'>
+            <thead>
+              <tr className=''>
+                <th className='pb-3'>Id</th>
+                <th className='pb-3'>Name</th>
+                <th className='pb-3'>Phone No</th>
+                <th className='pb-3'>Level</th>
+                <th className='pb-3'>Class</th>
+                <th className='pb-3 w-28'>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map((student, index) => {
+                return (
+                  <tr key={student.student_id}>
+                    <td className='text-center py-2'>{index + 1}</td>
+                    <td className='text-center py-2'>{student.fullName}</td>
+                    <td className='text-center py-2'>{student.phoneNo}</td>
+                    <td className='text-center py-2 text-sm'>
+                      {student.level}
+                    </td>
+                    <td className='text-center py-2'>{student.class}</td>
+                    <td className='py-2 text-center'>
+                      <div className='w-full flex space-x-3'>
+                        <div className='relative group w-auto'>
+                          <div className='absolute text-xs w-auto -top-8 left-1 bg-gray-900 text-white shadow-lg p-1 rounded-md transition-all invisible transform scale-50 group-hover:visible group-hover:scale-100'>
+                            Edit
+                          </div>
+                          <button
+                            onClick={() => {}}
+                            className='w-10 h-10 text-center text-blue-600 hover:bg-gray-200 rounded-full'
+                          >
+                            <AiFillEdit className='mx-auto' />
+                          </button>
+                        </div>
+
+                        <div className='relative group w-auto'>
+                          <div className='absolute text-xs w-auto -top-8 -left-1 bg-gray-900 text-white shadow-lg p-1 rounded-md transition-all invisible transform scale-50 group-hover:visible group-hover:scale-100'>
+                            Delete
+                          </div>
+                          <button
+                            onClick={() => {
+                              DeleteStudent(student.student_id);
+                            }}
+                            className='w-10 h-10 text-center text-red-600 hover:bg-gray-200 rounded-full'
+                          >
+                            <AiFillDelete className='mx-auto' />
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <div className='w-full p-5'>
+            <div className='text-8xl text-gray-900'>
+              <BsFillFilePersonFill className='mx-auto' />
             </div>
-
-            {/* Phone Number */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Phone Number</p>
-              <Textfield
-                type='number'
-                onChange={(e) => {
-                  setPhoneNo(e.target.value);
-                }}
-                value={phoneNo}
-                placeholder='eg. 3312221445'
-              />
-            </div>
-
-            {/* Level */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Level</p>
-
-              <select
-                onChange={(e) => {
-                  setLevel(e.target.value);
-                }}
-                value={level}
-                className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-                required
-              >
-                <option>Select Level</option>
-                <option value='O'>O Levels</option>
-                <option value='A'>A Levels</option>
-              </select>
-            </div>
-
-            {/* Class */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Class</p>
-
-              <select
-                onChange={(e) => {
-                  setStudentClass(e.target.value);
-                }}
-                value={studentClass}
-                className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              >
-                <option>Select Class</option>
-                <option value='9'>9</option>
-                <option value='10'>10</option>
-                <option value='11'>11</option>
-                <option value='As'>As</option>
-                <option value='A2'>A2</option>
-              </select>
-            </div>
-
-            {/* Submit Btn */}
-            <div className='col-span-2 w-full flex items-end'>
-              <PrimaryBtn id='addBtn' type='submit' text='Add Student' />
-            </div>
+            <br />
+            <h3 className='text-center'>No Students added yet</h3>
           </div>
-        </form>
+        )}
       </div>
     </div>
   );
 };
 
-export default AddStudent;
+export default ViewStudent;
