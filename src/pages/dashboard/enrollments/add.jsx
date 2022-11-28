@@ -1,17 +1,13 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import {
-  BsFillFilePersonFill,
-  BsFillPlusSquareFill,
-  BsViewList,
-} from "react-icons/bs";
+import { BsViewList } from "react-icons/bs";
+
 import { useNavigate } from "react-router-dom";
 import ErrorAlert from "../../../components/alerts/error";
 import InfoAlert from "../../../components/alerts/info";
 import SuccessAlert from "../../../components/alerts/success";
 import PrimaryBtn from "../../../components/buttons/primary";
 import SecondaryBtn from "../../../components/buttons/secondary";
-import Textfield from "../../../components/inputs/textfield";
 import Sidebar from "../../../components/navigation/sidebar";
 import apiUrl from "../../../config";
 import {
@@ -27,20 +23,10 @@ const AddEnrollment = () => {
 
   const [alertMsg, setAlertMsg] = useState();
 
-  const [enrolments, setEnrolments] = useState([]);
-
   const [students, setStudents] = useState([]);
-  const [subjects, setSubjects] = useState([]);
-  const [teachers, setTeachers] = useState([]);
   const [sections, setSections] = useState([]);
 
   const [student, setStudent] = useState("");
-  const [subject, setSubject] = useState("");
-  const [fees, setFees] = useState("");
-  const [section, setSection] = useState("");
-  const [duration, setDuration] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
 
   function FetchAllStudents() {
     fetch(`${apiUrl}/students/`, {
@@ -53,79 +39,180 @@ const AddEnrollment = () => {
       });
   }
 
-  function FetchAllSubjects() {
-    fetch(`${apiUrl}/subjects/`, {
-      method: "get",
-      mode: "cors",
-    })
+  const GetSections = () => {
+    fetch(`${apiUrl}/sections/?student_id=${student}`)
       .then((response) => response.json())
       .then((data) => {
-        setSubjects(data);
-      });
-  }
-
-  useEffect(() => {
-    FetchAllStudents();
-    FetchAllSubjects();
-  }, []);
-
-  useEffect(() => {
-    if (subject !== "") {
-      FetchSections();
-    }
-  }, [subject]);
-
-  const FetchSections = () => {
-    fetch(`${apiUrl}/sections/get/subject?id=${subject}`, {
-      method: "get",
-      mode: "cors",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-
         setSections(data);
+        // const sections = document.getElementsByName("section");
+
+        // sections.forEach((sect) => {
+        //   let options = `
+        //     <option>Select Section</option>
+        //   `;
+
+        //   data.forEach((dt) => {
+        //     options += `<option value='${dt.section_id}'>${dt.subject} -- ${dt.section}</option>`;
+        //   });
+
+        //   sect.innerHTML = options;
+        // });
+
+        AddSectionsToAllSubjects(data);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        console.log(error);
       });
   };
 
-  function FetchAllTeachersForSubject(id) {
-    fetch(`${apiUrl}/teachers/getForSubject?subject_id=${id}`, {
-      method: "get",
-      mode: "cors",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setTeachers(data);
-      });
-  }
+  useEffect(() => {
+    if (student && student !== "") {
+      GetSections();
+    }
+  }, [student]);
 
-  function FetchAllSectionsForSubjectAndTeacher(subject_id, teacher_id) {
-    fetch(
-      `${apiUrl}/sections/getForSubjectAndTeacher?subject_id=${subject_id}&teacher_id=${teacher_id}`,
-      {
-        method: "get",
-        mode: "cors",
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        setSections(data);
-      });
-  }
+  const AddEnrolmentSection = (e) => {
+    e.preventDefault();
 
-  function FetchAllEnrolments() {
-    fetch(`${apiUrl}/enrolments/`, {
-      method: "get",
-      mode: "cors",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setEnrolments(data);
-      });
-  }
+    const subjectsContainer = document.getElementById("multiple-subjects");
+
+    const randomNumber = Math.floor(Math.random() * 100000);
+
+    subjectsContainer.innerHTML += `
+      <div id='section-${randomNumber}' class='w-full grid grid-cols-3 gap-4 border-t py-5'>
+
+      <div class='w-full col-span-2'>
+        <p class='py-1 text-gray-700'>Section</p>
+
+        <select
+          name='section'
+          required
+          class='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+        >
+          <option>Select Section</option>
+        </select>
+      </div>
+
+      <div class='w-full'>
+        <p class='py-1 text-gray-700'>Fees</p>
+
+        <input
+          type='number'
+          name='fees'
+          class='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+          placeholder='Fees'
+          required
+        />
+      </div>
+
+      <div class='w-full'>
+        <p class='py-1 text-gray-700'>Duration</p>
+
+        <select
+          class='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+        >
+          <option value='Manually'>Select Manually</option>
+        </select>
+      </div>
+
+      <div class='w-full'>
+        <p class='py-1 text-gray-700'>Start Date</p>
+
+        <input
+          name='start-date'
+          type='date'
+          class='appearance-none w-full bg-white p-2.5 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+          required
+        />
+      </div>
+
+      <div class='w-full'>
+        <p class='py-1 text-gray-700'>End Date</p>
+
+        <input
+          name='end-date'
+          type='date'
+          class='appearance-none w-full bg-white p-2.5 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+          required
+        />
+      </div>
+
+      <div class='col-span-3'>
+        <button type='button' onclick='document.getElementById("section-${randomNumber}").remove()' class='p-2 px-5 rounded bg-red-600 text-white uppercase text-sm float-right'>Remove</button>
+      </div>
+    </div>
+    `;
+
+    AddSectionsToAllSubjects(sections);
+  };
+
+  useEffect(() => {
+    const subjectsContainer = document.getElementById("multiple-subjects");
+
+    if (subjectsContainer.innerHTML) {
+    } else {
+      subjectsContainer.innerHTML += `
+      <div id='section-1' class='w-full grid grid-cols-3 gap-4 border-t py-5'>
+
+      <div class='w-full col-span-2'>
+        <p class='py-1 text-gray-700'>Section</p>
+
+        <select
+          name='section'
+          required
+          class='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+        >
+          <option>Select Section</option>
+        </select>
+      </div>
+
+      <div class='w-full'>
+        <p class='py-1 text-gray-700'>Fees</p>
+
+        <input
+          type='number'
+          name='fees'
+          class='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+          placeholder='Fees'
+          required
+        />
+      </div>
+
+      <div class='w-full'>
+        <p class='py-1 text-gray-700'>Duration</p>
+
+        <select
+          class='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+        >
+          <option value='Manually'>Select Manually</option>
+        </select>
+      </div>
+
+      <div class='w-full'>
+        <p class='py-1 text-gray-700'>Start Date</p>
+
+        <input
+          name='start-date'
+          type='date'
+          class='appearance-none w-full bg-white p-2.5 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+          required
+        />
+      </div>
+
+      <div class='w-full'>
+        <p class='py-1 text-gray-700'>End Date</p>
+
+        <input
+          name='end-date'
+          type='date'
+          class='appearance-none w-full bg-white p-2.5 px-5 border rounded-md focus:outline-none focus:border-gray-800'
+          required
+        />
+      </div>
+    </div>
+    `;
+    }
+  }, []);
 
   useEffect(() => {
     if (!IsAdminLoggedIn()) {
@@ -138,10 +225,7 @@ const AddEnrollment = () => {
       }, 3000);
     }
 
-    // FetchAllEnrolments();
-
-    // FetchAllSubjects();
-    // FetchAllStudents();
+    FetchAllStudents();
   }, []);
 
   function OnSubmit(e) {
@@ -149,12 +233,25 @@ const AddEnrollment = () => {
 
     AddLoaderToBtn("enrol-student-btn");
 
+    const sections = document.getElementsByName("section");
+    const fees = document.getElementsByName("fees");
+    const startDates = document.getElementsByName("start-date");
+    const endDates = document.getElementsByName("end-date");
+
+    const enrolments = [];
+
+    for (let i = 0; i < sections.length; i++) {
+      enrolments.push({
+        section: sections[i].value,
+        fees: fees[i].value,
+        start_date: startDates[i].value,
+        end_date: endDates[i].value,
+      });
+    }
+
     const enrolment = {
       student_id: student,
-      fees: fees,
-      section_id: section,
-      start_date: startDate,
-      end_date: endDate,
+      enrolments: enrolments,
     };
 
     fetch(`${apiUrl}/enrolments/`, {
@@ -174,11 +271,6 @@ const AddEnrollment = () => {
           ShowAlert("success");
 
           setStudent("");
-          setSubject("");
-          setFees(0);
-          setSection("");
-          setStartDate("");
-          setEndDate("");
 
           setTimeout(() => {
             HideAlert("success");
@@ -198,6 +290,29 @@ const AddEnrollment = () => {
       })
       .catch((err) => console.log(err.response));
   }
+
+  const AddSectionsToAllSubjects = (data) => {
+    const sections = document.getElementsByName("section");
+
+    console.log(sections);
+    console.log(data);
+
+    if (data.length > 0) {
+      sections.forEach((sect) => {
+        let options = `
+              <option>Select Section</option>
+            `;
+
+        data.forEach((dt) => {
+          options += `<option value='${dt.section_id}'>${dt.subject} -- ${dt.section}</option>`;
+        });
+
+        sect.innerHTML = options;
+      });
+
+      console.log("Added Sections");
+    }
+  };
 
   return (
     <div className='w-screen min-h-screen flex'>
@@ -246,108 +361,17 @@ const AddEnrollment = () => {
             </div>
 
             <div className='col-span-2 flex w-full items-end'>
-              <PrimaryBtn type='button' text='Add More' />
+              <PrimaryBtn
+                onClick={AddEnrolmentSection}
+                type='button'
+                text='Add More'
+              />
             </div>
           </div>
 
           <br />
 
-          <div className='w-full grid grid-cols-3 gap-4 border-t py-5'>
-            {/* Subject */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Subject</p>
-
-              <select
-                onChange={(e) => {
-                  setSubject(e.target.value);
-                }}
-                value={subject}
-                className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              >
-                <option>Select Subject</option>
-                {subjects.map((sub) => {
-                  return (
-                    <option key={sub.subject_id} value={sub.subject_id}>
-                      {sub.name}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
-            {/* Fees */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Fees</p>
-
-              <Textfield
-                type='number'
-                placeholder='Fees'
-                value={fees}
-                onChange={(e) => {
-                  setFees(e.target.value);
-                }}
-              />
-            </div>
-
-            {/* Section */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Section</p>
-
-              <select
-                onChange={(e) => {
-                  setSection(e.target.value);
-                }}
-                value={section}
-                className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              >
-                <option>Select Section</option>
-                {sections.map((sect) => {
-                  return (
-                    <option key={sect.section_id} value={sect.section_id}>
-                      {sect.name} - {sect.class}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
-            {/* Duration */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Duration</p>
-
-              <select
-                onChange={(e) => {
-                  setDuration(e.target.value);
-                }}
-                value={duration}
-                className='appearance-none w-full bg-white p-3 px-5 border rounded-md focus:outline-none focus:border-gray-800'
-              >
-                <option value='Manually'>Select Manually</option>
-              </select>
-            </div>
-
-            {/* Start Date */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>Start Date</p>
-
-              <Textfield
-                type='date'
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-
-            {/* End Date */}
-            <div className='w-full'>
-              <p className='py-1 text-gray-700'>End Date</p>
-
-              <Textfield
-                type='date'
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-          </div>
+          <div id='multiple-subjects'></div>
 
           <br />
 
@@ -360,65 +384,6 @@ const AddEnrollment = () => {
 
         <br />
         <br />
-
-        {/* <div className='w-full flex space-x-3 border-t border-b py-2'>
-          <SecondaryBtn
-            fullWidth={false}
-            icon={<BsViewList />}
-            text='View All Student Enrolments'
-          />
-        </div>
-
-        <br />
-
-        {enrolments.length > 0 ? (
-          <table className='w-full table-auto'>
-            <thead>
-              <tr className=''>
-                <th className='pb-3'>Id</th>
-                <th className='pb-3'>Student</th>
-                <th className='pb-3'>Subject</th>
-                <th className='pb-3'>Teacher</th>
-                <th className='pb-3'>Section</th>
-                <th className='pb-3'>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {enrolments.map((enrolment, index) => {
-                return (
-                  <tr key={enrolment.enrollment_id}>
-                    <td className='text-center py-2'>{index + 1}</td>
-                    <td className='text-center py-2'>{enrolment.student}</td>
-                    <td className='text-center py-2'>{enrolment.subject}</td>
-                    <td className='text-center py-2'>{enrolment.teacher}</td>
-                    <td className='text-center py-2 text-sm'>
-                      {enrolment.section}
-                    </td>
-                    <td className='py-2'>
-                      <div className='w-full flex space-x-3'>
-                        <button className='w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white'>
-                          Edit
-                        </button>
-
-                        <button className='w-full p-2 bg-red-600 hover:bg-red-700 rounded-md text-white'>
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        ) : (
-          <div className='w-full p-5'>
-            <div className='text-8xl text-gray-900'>
-              <BsFillFilePersonFill className='mx-auto' />
-            </div>
-            <br />
-            <h3 className='text-center'>No student enrolments yet</h3>
-          </div>
-        )} */}
       </div>
     </div>
   );

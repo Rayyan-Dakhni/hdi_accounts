@@ -40,12 +40,14 @@ const EditTeacher = () => {
       }, 3000);
     }
 
-    if (!location.state.teacher) {
+    if (!location.state) {
       navigate("/dashboard/teacher/view", { replace: true });
     }
 
-    setTeacherName(location.state.teacher.name);
-    setRate(location.state.teacher.rate);
+    console.log(location.state);
+
+    setTeacherName(location.state.name);
+    setRate(location.state.rate);
   }, []);
 
   function OnSubmit(e) {
