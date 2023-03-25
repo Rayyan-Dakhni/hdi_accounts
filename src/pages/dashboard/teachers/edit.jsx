@@ -54,7 +54,7 @@ const EditTeacher = () => {
     e.preventDefault();
 
     const updatedTeacher = {
-      id: location.state.teacher.id,
+      id: location.state.teacher_id,
       name: teacherName,
       rate: rate,
     };

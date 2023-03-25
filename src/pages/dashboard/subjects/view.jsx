@@ -25,6 +25,7 @@ import {
   ShowAlert,
   ShowModal,
 } from "../../../helpers/functions";
+import Table from "../../../components/table";
 
 const ViewSubjects = () => {
   const navigate = useNavigate();
@@ -81,10 +82,6 @@ const ViewSubjects = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
-        // hello
-
         HideModal("edit-modal");
 
         setAlertMsg("Subject Updated");
@@ -152,71 +149,77 @@ const ViewSubjects = () => {
         <br />
 
         {subjects.length > 0 ? (
-          <table className='w-full table-auto'>
-            <thead>
-              <tr className=''>
-                <th className='pb-3'>Id</th>
-                <th className='pb-3'>Subject Name</th>
-                <th className='pb-3'>Teachers Assigned</th>
-                <th className='pb-3'>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {subjects.map((subject, index) => {
-                console.log(subject);
-                return (
-                  <tr key={subject.subject_id}>
-                    <td className='text-center py-2'>{index + 1}</td>
-                    <td className='text-center py-2'>{subject.name}</td>
-                    <td className='text-center py-2'>
-                      {subject.teacher_names.map((teacher) => {
-                        return <p className='py-1'>{teacher}</p>;
-                      })}
+          <>
+            <Table
+              headers={["id", "subject name", "teachers assigned", "actions"]}
+              values={subjects}
+            ></Table>
 
-                      {subject.teacher_names.length > 0
-                        ? ""
-                        : "No teachers assigned yet"}
-                    </td>
-                    <td className='py-2'>
-                      <div className='w-full flex justify-center items-center space-x-3'>
-                        <div className='relative group'>
-                          <div className='absolute w-full text-xs text-center bg-gray-900 text-white -top-8 shadow-md p-1 rounded-md transition-all invisible transform scale-50 group-hover:visible group-hover:scale-100'>
-                            Edit
-                          </div>
-                          <button
-                            onClick={() => {
-                              navigate("/dashboard/subjects/edit", {
-                                state: {
-                                  subject: subject,
-                                },
-                              });
-                            }}
-                            className='w-10 h-10 text-center text-blue-600 hover:bg-gray-200 rounded-full'
-                          >
-                            <AiFillEdit className='mx-auto' />
-                          </button>
-                        </div>
+            <table className='w-full table-auto border'>
+              <thead className='bg-gray-100'>
+                <tr>
+                  <th className='p-3 border'>Id</th>
+                  <th className='p-3 border'>Subject Name</th>
+                  <th className='p-3 border'>Teachers Assigned</th>
+                  <th className='p-3 border'>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {subjects.map((subject, index) => {
+                  return (
+                    <tr key={subject.subject_id}>
+                      <td className='text-center py-2'>{index + 1}</td>
+                      <td className='text-center py-2'>{subject.name}</td>
+                      <td className='text-center py-2'>
+                        {subject.teacher_names.map((teacher) => {
+                          return <p className='py-1'>{teacher}</p>;
+                        })}
 
-                        <div className='relative group'>
-                          <div className='absolute text-xs w-auto -top-8 -left-1 bg-gray-900 text-white shadow-lg p-1 rounded-md transition-all invisible transform scale-50 group-hover:visible group-hover:scale-100'>
-                            Delete
+                        {subject.teacher_names.length > 0
+                          ? ""
+                          : "No teachers assigned yet"}
+                      </td>
+                      <td className='py-2'>
+                        <div className='w-full flex justify-center items-center space-x-3'>
+                          <div className='relative group'>
+                            <div className='absolute w-full text-xs text-center bg-gray-900 text-white -top-8 shadow-md p-1 rounded-md transition-all invisible transform scale-50 group-hover:visible group-hover:scale-100'>
+                              Edit
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigate("/dashboard/subjects/edit", {
+                                  state: {
+                                    subject: subject,
+                                  },
+                                });
+                              }}
+                              className='w-10 h-10 text-center text-blue-600 hover:bg-gray-200 rounded-full'
+                            >
+                              <AiFillEdit className='mx-auto' />
+                            </button>
                           </div>
-                          <button
-                            onClick={() => {
-                              DeleteSubject(subject.subject_id);
-                            }}
-                            className='w-10 h-10 text-center text-red-600 hover:bg-gray-200 rounded-full'
-                          >
-                            <AiFillDelete className='mx-auto' />
-                          </button>
+
+                          <div className='relative group'>
+                            <div className='absolute text-xs w-auto -top-8 -left-1 bg-gray-900 text-white shadow-lg p-1 rounded-md transition-all invisible transform scale-50 group-hover:visible group-hover:scale-100'>
+                              Delete
+                            </div>
+                            <button
+                              onClick={() => {
+                                DeleteSubject(subject.subject_id);
+                              }}
+                              className='w-10 h-10 text-center text-red-600 hover:bg-gray-200 rounded-full'
+                            >
+                              <AiFillDelete className='mx-auto' />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
         ) : (
           <div className='w-full p-5'>
             <div className='text-8xl text-gray-900'>
